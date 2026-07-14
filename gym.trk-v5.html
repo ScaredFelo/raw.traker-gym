@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-        <!-- Vinculación del Manifiesto PWA -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>RAW TRACKER PRO</title>
+    <!-- Vinculación del Manifiesto PWA -->
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RAW TRACKER PRO</title>
     <style>
         :root {
             --bg-main: #0a0a0a;
@@ -19,7 +18,20 @@
             --text-secondary: #8e8e93;
             --accent-green: #30d158;
             --accent-red: #ff453a;
+            --accent-yellow: #ffd60a;
+            --accent-blue: #0a84ff;
             --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* BLOQUEO DE MOVIMIENTOS PARÁSITOS EN IOS */
+        html, body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            overscroll-behavior: none;
+            -webkit-overflow-scrolling: touch;
         }
 
         * {
@@ -31,10 +43,8 @@
         }
 
         body {
-            background-color: var(--bg-main);
-            color: var(--text-primary);
             padding: 16px;
-            padding-bottom: 140px;
+            padding-bottom: 160px;
         }
 
         header {
@@ -79,6 +89,7 @@
             font-size: 0.85rem;
             text-transform: uppercase;
             cursor: pointer;
+            user-select: none;
         }
 
         .btn-success {
@@ -97,6 +108,7 @@
             margin-top: 8px;
         }
 
+        /* FIJACIÓN INMUTABLE DE LAS BARRAS INFERIORES */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -106,8 +118,10 @@
             border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: space-around;
-            padding: 10px 0;
-            z-index: 110;
+            padding: 12px 0;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+            z-index: 999;
+            user-select: none;
         }
 
         .nav-item {
@@ -128,6 +142,22 @@
             border-bottom: 2px solid var(--text-primary);
         }
 
+        .timer-bar {
+            position: fixed;
+            bottom: 60px;
+            bottom: calc(60px + env(safe-area-inset-bottom));
+            left: 0;
+            width: 100%;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 998;
+            user-select: none;
+        }
+
         .exercise-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -139,12 +169,30 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 4px;
         }
 
         .exercise-title {
             font-size: 1.1rem;
             font-weight: 700;
+        }
+
+        /* DISEÑO DE LAS NOTAS */
+        .exercise-note-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px dashed var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            padding: 4px 0;
+            margin-bottom: 12px;
+            outline: none;
+        }
+        
+        .exercise-note-input:focus {
+            border-bottom-color: var(--text-secondary);
+            color: var(--text-primary);
         }
 
         .set-table {
@@ -188,6 +236,7 @@
             text-align: center;
         }
 
+        /* BOTÓN DE CHECK */
         .check-btn {
             width: 34px;
             height: 34px;
@@ -198,6 +247,7 @@
             justify-content: center;
             cursor: pointer;
             font-weight: bold;
+            user-select: none;
         }
 
         .completed .check-btn {
@@ -205,6 +255,26 @@
             border-color: var(--accent-green);
             color: var(--bg-main);
         }
+
+        /* SELECTOR DE TIPO DE SERIE */
+        .set-type-badge {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            line-height: 26px;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 800;
+            border: 1px solid var(--border-color);
+            background: var(--bg-input);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .set-type-N { color: var(--text-primary); border-color: var(--border-color); }
+        .set-type-C { color: var(--accent-blue); border-color: var(--accent-blue); }
+        .set-type-F { color: var(--accent-red); border-color: var(--accent-red); }
+        .set-type-D { color: var(--accent-yellow); border-color: var(--accent-yellow); }
 
         .btn-add-set {
             width: 100%;
@@ -226,20 +296,6 @@
             font-size: 0.8rem;
             color: var(--text-secondary);
             margin-bottom: 6px;
-        }
-
-        .timer-bar {
-            position: fixed;
-            bottom: 55px;
-            left: 0;
-            width: 100%;
-            background: var(--bg-card);
-            border-top: 1px solid var(--border-color);
-            padding: 8px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
         }
 
         .timer-info {
@@ -272,6 +328,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            user-select: none;
         }
 
         .chart-list-item:active {
@@ -285,7 +342,6 @@
             margin-bottom: 16px;
         }
 
-        /* MODAL INTERNO INTEGRADO */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -294,7 +350,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.85);
-            z-index: 200;
+            z-index: 1000;
             align-items: center;
             justify-content: center;
             padding: 20px;
@@ -442,16 +498,16 @@
     <script>
         const defaultTemplates = {
             'Push': [
-                { name: 'Press de Banca Plano', sets: [{ weight: 60, reps: 10, completed: false, prev: '-' }] },
-                { name: 'Press Militar', sets: [{ weight: 20, reps: 10, completed: false, prev: '-' }] }
+                { name: 'Press de Banca Plano', note: '', sets: [{ weight: 60, reps: 10, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Press Militar', note: '', sets: [{ weight: 20, reps: 10, completed: false, prev: '-', type: 'N' }] }
             ],
             'Pull': [
-                { name: 'Dominadas Pronas', sets: [{ weight: 0, reps: 8, completed: false, prev: '-' }] },
-                { name: 'Remo con Barra', sets: [{ weight: 50, reps: 10, completed: false, prev: '-' }] }
+                { name: 'Dominadas Pronas', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Remo con Barra', note: '', sets: [{ weight: 50, reps: 10, completed: false, prev: '-', type: 'N' }] }
             ],
             'Legs': [
-                { name: 'Sentadillas', sets: [{ weight: 80, reps: 8, completed: false, prev: '-' }] },
-                { name: 'Prensa de Piernas', sets: [{ weight: 150, reps: 10, completed: false, prev: '-' }] }
+                { name: 'Sentadillas', note: '', sets: [{ weight: 80, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Prensa de Piernas', note: '', sets: [{ weight: 150, reps: 10, completed: false, prev: '-', type: 'N' }] }
             ]
         };
 
@@ -463,7 +519,6 @@
         let editingRoutineKey = null;
         let editingRoutineData = null;
 
-        // --- SISTEMA DE MODAL INTERNO PERSONALIZADO (FIJA LOS ERRORES EN IOS) ---
         function openCustomModal(title, placeholder, onConfirm) {
             document.getElementById('modal-title').innerText = title;
             const input = document.getElementById('modal-input');
@@ -486,7 +541,6 @@
             document.getElementById('custom-modal').classList.remove('active');
         }
 
-        // --- ENRUTADOR ---
         function switchView(viewId, buttonElement) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(`view-${viewId}`).classList.add('active');
@@ -586,7 +640,8 @@
             openCustomModal("Nombre del ejercicio", "Ej: Dominadas, Press...", function(name) {
                 editingRoutineData.push({
                     name: name,
-                    sets: [{ weight: 0, reps: 0, completed: false, prev: '-' }]
+                    note: '',
+                    sets: [{ weight: 0, reps: 0, completed: false, prev: '-', type: 'N' }]
                 });
                 renderEditorExercises();
             });
@@ -621,7 +676,8 @@
                         weight: s.weight,
                         reps: s.reps,
                         completed: false,
-                        prev: `${s.weight} kg x ${s.reps}`
+                        prev: `${s.weight} kg x ${s.reps}`,
+                        type: s.type || 'N'
                     }));
                 }
             });
@@ -663,15 +719,24 @@
                 const card = document.createElement('div');
                 card.className = 'exercise-card';
                 let rowsHtml = '';
+                
                 exercise.sets.forEach((set, setIndex) => {
+                    const typeClass = `set-type-${set.type || 'N'}`;
                     rowsHtml += `
                         <tr class="set-row ${set.completed ? 'completed' : ''}">
-                            <td style="font-weight:700; color:var(--text-secondary);">${setIndex + 1}</td>
+                            <td>
+                                <div class="set-type-badge ${typeClass}" onclick="cycleSetType(${exIndex}, ${setIndex})">
+                                    ${set.type || 'N'}
+                                </div>
+                            </td>
                             <td style="font-size:0.8rem; color:var(--text-secondary);">${set.prev || '-'}</td>
                             <td><input type="number" step="0.25" value="${set.weight}" onchange="updateSetData(${exIndex}, ${setIndex}, 'weight', this.value)"></td>
                             <td><input type="number" value="${set.reps}" onchange="updateSetData(${exIndex}, ${setIndex}, 'reps', this.value)"></td>
                             <td>
                                 <div class="check-btn" onclick="toggleSetComplete(${exIndex}, ${setIndex})">${set.completed ? '✓' : ''}</div>
+                            </td>
+                            <td>
+                                <button class="btn" style="border:none; background:transparent; padding:4px; color:var(--accent-red);" onclick="deleteSet(${exIndex}, ${setIndex})">🗑️</button>
                             </td>
                         </tr>
                     `;
@@ -682,8 +747,10 @@
                         <span class="exercise-title">${exercise.name}</span>
                         <button class="btn" style="color:var(--accent-red); border:none;" onclick="deleteExercise(${exIndex})">❌</button>
                     </div>
+                    <!-- Nota Persistente por Ejercicio -->
+                    <input type="text" class="exercise-note-input" value="${exercise.note || ''}" placeholder="Añadir notas (ej: ángulo del banco, sensaciones...)" onchange="updateExerciseNote(${exIndex}, this.value)">
                     <table class="set-table">
-                        <thead><tr><th>Set</th><th>Prev</th><th>kg</th><th>Reps</th><th>✓</th></tr></thead>
+                        <thead><tr><th>Tipo</th><th>Prev</th><th>kg</th><th>Reps</th><th>✓</th><th></th></tr></thead>
                         <tbody>${rowsHtml}</tbody>
                     </table>
                     <button class="btn btn-add-set" onclick="addSet(${exIndex})">+ Añadir Serie</button>
@@ -692,9 +759,36 @@
             });
         }
 
+        // --- ACTUALIZACIONES DE EJERCICIO ACTIVO ---
         function updateSetData(exIndex, setIndex, field, value) {
             currentWorkout[exIndex].sets[setIndex][field] = parseFloat(value) || 0;
             saveState();
+        }
+
+        // Nota persistente (guarda en sesión y en la plantilla original)
+        function updateExerciseNote(exIndex, text) {
+            currentWorkout[exIndex].note = text;
+            
+            // Si la sesión corresponde a una plantilla de rutina guardada, actualizarla allí también
+            if (currentWorkoutName && templates[currentWorkoutName]) {
+                const exName = currentWorkout[exIndex].name;
+                const templateEx = templates[currentWorkoutName].find(e => e.name.toLowerCase() === exName.toLowerCase());
+                if (templateEx) {
+                    templateEx.note = text;
+                    saveTemplates();
+                }
+            }
+            saveState();
+        }
+
+        // Rotar etiqueta de serie (N -> C -> F -> D)
+        function cycleSetType(exIndex, setIndex) {
+            const set = currentWorkout[exIndex].sets[setIndex];
+            const states = ['N', 'C', 'F', 'D'];
+            let nextIndex = (states.indexOf(set.type || 'N') + 1) % states.length;
+            set.type = states[nextIndex];
+            saveState();
+            renderWorkout();
         }
 
         function toggleSetComplete(exIndex, setIndex) {
@@ -707,22 +801,33 @@
 
         function addSet(exIndex) {
             const sets = currentWorkout[exIndex].sets;
-            const lastSet = sets[sets.length - 1] || { weight: 0, reps: 0 };
+            const lastSet = sets[sets.length - 1] || { weight: 0, reps: 0, type: 'N' };
             sets.push({
                 weight: lastSet.weight,
                 reps: lastSet.reps,
                 completed: false,
-                prev: lastSet.weight ? `${lastSet.weight} kg x ${lastSet.reps}` : '-'
+                prev: lastSet.weight ? `${lastSet.weight} kg x ${lastSet.reps}` : '-',
+                type: lastSet.type || 'N'
             });
             saveState();
             renderWorkout();
+        }
+
+        // Eliminar serie individual
+        function deleteSet(exIndex, setIndex) {
+            if (confirm(`¿Eliminar la serie ${setIndex + 1}?`)) {
+                currentWorkout[exIndex].sets.splice(setIndex, 1);
+                saveState();
+                renderWorkout();
+            }
         }
 
         function openAddExerciseSessionModal() {
             openCustomModal("Añadir ejercicio a la sesión", "Ej: Curl de bíceps...", function(name) {
                 currentWorkout.push({
                     name: name,
-                    sets: [{ weight: 0, reps: 0, completed: false, prev: "-" }]
+                    note: '',
+                    sets: [{ weight: 0, reps: 0, completed: false, prev: "-", type: 'N' }]
                 });
                 saveState();
                 renderWorkout();
@@ -772,8 +877,13 @@
                 workout.exercises.forEach(ex => {
                     const activeSets = ex.sets.filter(s => s.completed);
                     if (activeSets.length > 0) {
-                        const setSummaries = activeSets.map(s => `${s.weight}kg x ${s.reps}`).join(' | ');
-                        exercisesHtml += `<p style="font-size:0.85rem; margin-top:4px;"><strong>${ex.name}:</strong> ${setSummaries}</p>`;
+                        const setSummaries = activeSets.map(s => `[${s.type || 'N'}] ${s.weight}kg x ${s.reps}`).join(' | ');
+                        let noteStr = ex.note ? `<p style="font-size:0.75rem; color:var(--text-secondary); font-style:italic;">Nota: ${ex.note}</p>` : '';
+                        exercisesHtml += `
+                            <div style="margin-top:6px;">
+                                <p style="font-size:0.85rem;"><strong>${ex.name}:</strong> ${setSummaries}</p>
+                                ${noteStr}
+                            </div>`;
                     }
                 });
                 div.innerHTML = `
@@ -782,7 +892,7 @@
                         <button class="btn" style="border:none; color:var(--accent-red); padding:2px;" onclick="deleteHistoryItem(${hIdx})">Eliminar</button>
                     </div>
                     <h4 style="text-transform: uppercase; font-size:1rem;">${workout.routineName || "Personalizada"}</h4>
-                    <div style="margin-top: 6px;">${exercisesHtml}</div>
+                    <div>${exercisesHtml}</div>
                 `;
                 container.appendChild(div);
             });
@@ -1010,8 +1120,9 @@
         loadState();
         renderWorkout();
         document.getElementById('timer-toggle-btn').innerText = `Iniciar (${formatTime(timerDuration)})`;
-
-            <!-- Registro del Service Worker para soporte Offline -->
+    </script>
+    
+    <!-- Registro del Service Worker para soporte Offline -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
