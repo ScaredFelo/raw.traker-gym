@@ -177,7 +177,6 @@
             font-weight: 700;
         }
 
-        /* DISEÑO DE LAS NOTAS */
         .exercise-note-input {
             width: 100%;
             background: transparent;
@@ -236,7 +235,6 @@
             text-align: center;
         }
 
-        /* BOTÓN DE CHECK */
         .check-btn {
             width: 34px;
             height: 34px;
@@ -256,7 +254,6 @@
             color: var(--bg-main);
         }
 
-        /* SELECTOR DE TIPO DE SERIE */
         .set-type-badge {
             display: inline-block;
             width: 28px;
@@ -496,18 +493,46 @@
     </nav>
 
     <script>
+        // --- PLANTILLAS ACTUALIZADAS CON TU RUTINA PPL/UL ---
         const defaultTemplates = {
             'Push': [
-                { name: 'Press de Banca Plano', note: '', sets: [{ weight: 60, reps: 10, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Press Militar', note: '', sets: [{ weight: 20, reps: 10, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Press banca inclinado', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Elevaciones laterales', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Triceps Pushdowns', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Seated cable Fly', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Press militar', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Extension de triceps', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ],
             'Pull': [
-                { name: 'Dominadas Pronas', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Remo con Barra', note: '', sets: [{ weight: 50, reps: 10, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Jalon al pecho en polea', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Biceps en doble/simple polea', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Remo en cable', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Curl martillo en polea', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Remo smith', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Isolateral reverse fly polea', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ],
             'Legs': [
-                { name: 'Sentadillas', note: '', sets: [{ weight: 80, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Prensa de Piernas', note: '', sets: [{ weight: 150, reps: 10, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Flexion de piernas estirado', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Press de piernas en maquina', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Elevacion de talones press', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Bulgaras', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Romanian dedlift (RDL)', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] }
+            ],
+            'Upper': [
+                { name: 'Press banca inclinado', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Seated cable Fly', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Jalon al pecho en polea', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Elevaciones laterales', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Remo smith', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Extension de triceps', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Biceps en doble/simple polea', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
+            ],
+            'Lower': [
+                { name: 'Flexion de piernas (sentado)', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Sentadilla con barra smith', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Romanian dedlift (RDL)', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Extension de quadriceps', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Elevacion talones (sentado)', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ]
         };
 
@@ -753,7 +778,7 @@
                         <thead><tr><th>Tipo</th><th>Prev</th><th>kg</th><th>Reps</th><th>✓</th><th></th></tr></thead>
                         <tbody>${rowsHtml}</tbody>
                     </table>
-                    <button class="btn btn-add-set" onclick="addSet(${exIndex})">+ Añadir Serie</button>
+                    <button class="btn btn-add-set" onclick="addSet(${exIndex})">+ Serie</button>
                 `;
                 container.appendChild(card);
             });
