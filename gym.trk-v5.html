@@ -766,8 +766,11 @@
 
             if (viewId === 'history') renderHistory();
             if (viewId === 'routines') renderRoutines();
-            if (viewId === 'charts') renderChartsExerciseList();
-        }
+                        if (viewId === 'charts') {
+                renderChartsExerciseList();
+                renderWeeklyMuscleVolume();
+            }
+
 
         // --- GESTIÓN DE RUTINAS ---
         function renderRoutines() {
