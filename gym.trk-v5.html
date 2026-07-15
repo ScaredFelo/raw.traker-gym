@@ -1075,11 +1075,49 @@
                 };
                 history.unshift(completedWorkout);
                 localStorage.setItem('raw_gym_history', JSON.stringify(history));
+
+                // Guardamos una copia temporal de la sesión para el modal de plantillas antes de resetearla de la vista
+                const workoutToSaveAsTemplate = JSON.parse(JSON.stringify(currentWorkout));
+
                 currentWorkout = null;
                 currentWorkoutName = "";
                 saveState();
                 renderWorkout();
                 switchView('history', document.querySelectorAll('.nav-item')[2]);
+
+                // Si la sesión guardada tenía algún ejercicio, ofrecemos guardarla como plantilla de rutina
+                if (workoutToSaveAsTemplate.length > 0) {
+                    setTimeout(() => {
+                        if (confirm("¿Quieres guardar este entrenamiento como una nueva plantilla de rutina para usarla en el futuro?")) {
+                            openCustomModal("Nombre de la nueva rutina", "Ej: Empuje B, Torso...", function(routineName) {
+                                if (templates[routineName]) {
+                                    alert("Ya existe una plantilla de rutina con ese nombre. No se ha podido guardar.");
+                                    return;
+                                }
+                                
+                                // Limpiamos los pesos para dejar una plantilla impecable con tus rangos por defecto
+                                const cleanTemplate = workoutToSaveAsTemplate.map(ex => {
+                                    return {
+                                        name: ex.name,
+                                        targetReps: ex.targetReps || '8-10',
+                                        note: ex.note || '',
+                                        sets: ex.sets.map(s => ({
+                                            weight: 0,
+                                            reps: s.reps || 8,
+                                            completed: false,
+                                            prev: '-',
+                                            type: 'N'
+                                        }))
+                                    };
+                                });
+
+                                templates[routineName] = cleanTemplate;
+                                saveTemplates();
+                                alert(`¡Rutina "${routineName}" guardada correctamente en tus Plantillas!`);
+                            });
+                        }
+                    }, 400); // Pequeño delay de cortesía para que cargue la interfaz de historial antes de saltar el modal
+                }
             }
         }
 
