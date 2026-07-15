@@ -1380,6 +1380,99 @@
             if (savedHistory) history = JSON.parse(savedHistory);
         }
 
+        // --- CÁLCULO Y RENDERIZADO DEL VOLUMEN MUSCULAR SEMANAL ---
+        function renderWeeklyMuscleVolume() {
+            const container = document.getElementById('muscle-volume-chart-container');
+            if (!container) return;
+
+            const now = Date.now();
+            const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+
+            // Inicializamos el mapa con las 13 categorías en 0
+            const volumeMap = {
+                'Pecho': 0, 'Triceps': 0, 'Hombro': 0,
+                'Hombro frontal': 0, 'Hombro lateral': 0, 'Hombro posterior': 0,
+                'Espalda': 0, 'Biceps': 0, 'Quadriceps': 0,
+                'Isquiotibiales': 0, 'Aductores': 0, 'Gemelos': 0, 'Gluteo': 0
+            };
+
+            // Filtrar las sesiones del historial de los últimos 7 días
+            history.forEach(session => {
+                const sessionTimestamp = session.timestamp || now;
+                if ((now - sessionTimestamp) <= sevenDaysMs) {
+                    session.exercises.forEach(ex => {
+                        // Buscamos el músculo asignado al ejercicio (si no tiene, por defecto no suma)
+                        let m = ex.muscle;
+                        
+                        // Si el ejercicio viejo del historial no tiene la etiqueta asignada, intentamos buscarla en tus plantillas actuales
+                        if (!m) {
+                            Object.keys(templates).forEach(k => {
+                                const match = templates[k].find(tEx => tEx.name.toLowerCase() === ex.name.toLowerCase());
+                                if (match && match.muscle) m = match.muscle;
+                            });
+                        }
+
+                        if (m && volumeMap[m] !== undefined) {
+                            // Filtrar y contar solo series efectivas completadas (N, F, D). Descartamos calentamiento (C)
+                            const effectiveSetsCount = ex.sets.filter(s => s.completed && (s.type === 'N' || s.type === 'F' || s.type === 'D' || !s.type)).length;
+                            
+                            // Sumamos en su barra correspondiente
+                            volumeMap[m] += effectiveSetsCount;
+
+                            // REGLA DEL MATIZ: Si es una cabeza de hombro, sumamos automáticamente también en el grupo general 'Hombro'
+                            if (m === 'Hombro frontal' || m === 'Hombro lateral' || m === 'Hombro posterior') {
+                                volumeMap['Hombro'] += effectiveSetsCount;
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Configuración geométrica del gráfico SVG de barras horizontales
+            const musclesList = Object.keys(volumeMap);
+            const rowHeight = 32;
+            const paddingLeft = 110; // Espacio para los nombres de los músculos
+            const paddingRight = 30; // Espacio al final de la barra para el texto del número
+            const width = container.clientWidth || 340;
+            const height = musclesList.length * rowHeight + 15;
+
+            // Encontrar el valor máximo de series de un músculo para escalar proporcionalmente las barras
+            const maxVolume = Math.max(...Object.values(volumeMap), 1);
+
+            let svgHtml = `<svg width="100%" height="${height}" style="background: var(--bg-main); border: 1px solid var(--border-color); display: block; padding-top: 10px;">`;
+
+            musclesList.forEach((muscle, idx) => {
+                const count = volumeMap[muscle];
+                const y = idx * rowHeight + 10;
+                
+                // Calcular longitud de la barra horizontal de forma proporcional
+                const availableWidth = width - paddingLeft - paddingRight;
+                const barWidth = (count / maxVolume) * availableWidth;
+
+                // Color dinámico para hacer la interfaz espectacular (Hombro general en amarillo, cabezas y resto en verde)
+                const barColor = (muscle === 'Hombro') ? 'var(--accent-yellow)' : 'var(--accent-green)';
+
+                svgHtml += `
+                    <!-- Nombre del Músculo -->
+                    <text x="${paddingLeft - 10}" y="${y + 14}" fill="var(--text-secondary)" font-size="11" font-weight="700" text-anchor="end">${muscle}</text>
+                    
+                    <!-- Barra de Fondo (Gris oscura) -->
+                    <rect x="${paddingLeft}" y="${y}" width="${availableWidth}" height="18" fill="var(--bg-input)" rx="3" />
+                    
+                    <!-- Barra de Volumen Real -->
+                    <rect x="${paddingLeft}" y="${y}" width="${barWidth}" height="18" fill="${barColor}" rx="3" />
+                    
+                    <!-- Número de series acumuladas al final -->
+                    <text x="${paddingLeft + barWidth + 8}" y="${y + 14}" fill="var(--text-primary)" font-size="11" font-weight="800">${count}</text>
+                `;
+            });
+
+            svgHtml += `</svg>`;
+            container.innerHTML = svgHtml;
+        }
+
+
+            
         loadState();
         renderWorkout();
 
