@@ -383,6 +383,131 @@
             flex: 1;
             text-align: center;
         }
+        
+        /* --- TEMPORIZADOR MAXIMIZADO A PANTALLA COMPLETA --- */
+    .fullscreen-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(10, 10, 10, 0.98); /* Fondo ultra oscuro a juego con tu --bg-main */
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
+        padding: 20px;
+    }
+
+    .close-timer-btn {
+        position: absolute;
+        top: 30px;
+        right: 30px;
+        background: none;
+        border: none;
+        color: var(--accent-red);
+        font-size: 2.5rem;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 2010;
+    }
+
+    .timer-content-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 360px;
+    }
+
+    /* Circunferencia del Reloj */
+    .timer-circle-container {
+        position: relative;
+        width: 260px;
+        height: 260px;
+        margin-bottom: 40px;
+    }
+
+    .timer-svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg); /* Para que empiece arriba en las 12 en punto */
+    }
+
+    .timer-bg-circle {
+        fill: none;
+        stroke: #1c1c1e; /* A juego con tu --bg-input */
+        stroke-width: 6px;
+    }
+
+    .timer-progress-circle {
+        fill: none;
+        stroke: var(--accent-green);
+        stroke-width: 6px;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 1s linear, stroke 0.5s ease;
+        stroke-dasharray: 282.74; /* Circunferencia exacta para radio 45 (2 * PI * r) */
+        stroke-dashoffset: 0;
+    }
+
+    .timer-digital-display {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 3.8rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        font-family: monospace;
+    }
+
+    /* Cuadrícula de Botones táctiles */
+    .timer-controls-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.3fr 1fr;
+        gap: 15px;
+        width: 100%;
+        margin-bottom: 25px;
+    }
+
+    .timer-control-btn {
+        padding: 18px 10px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        text-transform: uppercase;
+    }
+
+    .timer-control-btn.btn-prim {
+        background-color: var(--accent-green);
+        color: var(--bg-main);
+    }
+
+    .timer-control-btn.btn-sec {
+        background-color: var(--bg-card);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+
+    .timer-reset-btn {
+        background: none;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        padding: 12px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        width: 100%;
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 1px;
+    }
+
+        
     </style>
 </head>
 <body>
@@ -470,20 +595,41 @@
         <h2 style="margin-top: 10px;">Selecciona un ejercicio del historial:</h2>
         <div id="chart-exercises-list"></div>
     </div>
-
-    <!-- TIMER DE DESCANSO -->
-    <div class="timer-bar">
-        <div class="timer-info">
-            <span style="font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase;">Descanso</span>
-            <span id="timer-display" class="timer-clock">00:00</span>
-        </div>
-        <div style="display: flex; gap: 8px;">
-            <button class="btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="adjustTimer(-30)">-30s</button>
-            <button class="btn" style="padding: 4px 8px; font-size: 0.75rem;" onclick="adjustTimer(30)">+30s</button>
-            <button class="btn" style="padding: 4px 8px; font-size: 0.75rem;" id="timer-toggle-btn" onclick="toggleTimer()">Iniciar</button>
+    <!-- ==================== TIMER DE DESCANSO ==================== -->
+    <div class="timer-bar" onclick="toggleTimerFullscreen(true)" style="cursor: pointer; padding: 12px 15px;">
+        <div class="timer-info" style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px;">⏱️ Toque para ampliar descanso</span>
+            <span id="timer-display" class="timer-clock" style="font-size: 1.2rem; font-weight: bold;">00:00</span>
         </div>
     </div>
 
+    <!-- ==================== TEMPORIZADOR A PANTALLA COMPLETA ==================== -->
+    <div id="fullscreen-timer" class="fullscreen-overlay" style="display: none;">
+        <!-- Botón para cerrar y volver a la rutina activa -->
+        <button class="close-timer-btn" onclick="toggleTimerFullscreen(false)">✕</button>
+
+        <div class="timer-content-wrapper">
+            <!-- Reloj con Circunferencia Gráfica -->
+            <div class="timer-circle-container">
+                <svg class="timer-svg" viewBox="0 0 100 100">
+                    <circle class="timer-bg-circle" cx="50" cy="50" r="45" />
+                    <circle id="timer-progress-circle" class="timer-progress-circle" cx="50" cy="50" r="45" />
+                </svg>
+                <!-- Tiempo digital en el centro -->
+                <div id="fullscreen-timer-display" class="timer-digital-display">00:00</div>
+            </div>
+
+            <!-- Botones de Control -->
+            <div class="timer-controls-grid">
+                <button class="timer-control-btn btn-sec" onclick="adjustTimer(-15)">-15s</button>
+                <button id="btn-timer-toggle" class="timer-control-btn btn-prim" onclick="toggleTimerActive()">Pausar</button>
+                <button class="timer-control-btn btn-sec" onclick="adjustTimer(15)">+15s</button>
+            </div>
+        
+            <button class="timer-reset-btn" onclick="resetTimerFullscreen()">Resetear</button>
+        </div>
+    </div>
+     
     <!-- NAVEGACIÓN INFERIOR -->
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="switchView('train', this)">Entrenar</button>
@@ -1151,7 +1297,122 @@
 
         loadState();
         renderWorkout();
-        document.getElementById('timer-toggle-btn').innerText = `Iniciar (${formatTime(timerDuration)})`;
+
+        // ==================== LÓGICA DEL TEMPORIZADOR MAXIMIZADO ====================
+        let timerDuration = 90; // Tiempo por defecto (90 segundos)
+        let timerSecondsLeft = 0;
+        let timerInterval = null;
+        let isTimerPaused = false;
+
+        // Abre o cierra el temporizador a pantalla completa
+        function toggleTimerFullscreen(show) {
+            const overlay = document.getElementById('fullscreen-timer');
+            if (show) {
+                overlay.style.display = 'flex';
+                // Si el temporizador no está corriendo, lo iniciamos con 90s
+                if (timerSecondsLeft <= 0) {
+                    startFullscreenTimer(90); 
+                } else {
+                    updateFullscreenUI();
+                }
+            } else {
+                overlay.style.display = 'none';
+            }
+        }
+
+        // Inicia la cuenta atrás con los segundos indicados
+        function startFullscreenTimer(seconds) {
+            clearInterval(timerInterval);
+            timerDuration = seconds;
+            timerSecondsLeft = seconds;
+            isTimerPaused = false;
+    
+            const toggleBtn = document.getElementById('btn-timer-toggle');
+            if (toggleBtn) {
+                toggleBtn.innerText = "Pausar";
+                toggleBtn.style.backgroundColor = "var(--accent-green)";
+            }
+    
+            updateFullscreenUI();
+
+            timerInterval = setInterval(() => {
+                if (!isTimerPaused) {
+                    timerSecondsLeft--;
+                    updateFullscreenUI();
+
+                    if (timerSecondsLeft <= 0) {
+                        clearInterval(timerInterval);
+                        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                        toggleTimerFullscreen(false); // Cierra al terminar
+                    }
+                }
+            }, 1000);
+        }
+
+        // Actualiza el reloj digital, la barra inferior y el círculo gráfico
+        function updateFullscreenUI() {
+            const minutes = Math.floor(timerSecondsLeft / 60);
+            const seconds = timerSecondsLeft % 60;
+            const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            // 1. Actualizar textos digitales (pantalla completa y barra inferior)
+            const fullscreenDisplay = document.getElementById('fullscreen-timer-display');
+            const barDisplay = document.getElementById('timer-display');
+    
+            if (fullscreenDisplay) fullscreenDisplay.innerText = formattedTime;
+            if (barDisplay) barDisplay.innerText = formattedTime;
+
+            // 2. Animación del círculo SVG (La longitud total es 282.74)
+            const circle = document.getElementById('timer-progress-circle');
+            if (circle) {
+                const totalCircumference = 282.74;
+                 const percentageLeft = timerSecondsLeft / timerDuration;
+                const strokeDashoffset = totalCircumference * (1 - percentageLeft);
+                circle.style.strokeDashoffset = strokeDashoffset;
+
+                // 3. Cambios dinámicos de color según el tiempo restante (Verde -> Amarillo -> Rojo)
+                if (percentageLeft > 0.5) {
+                    circle.style.stroke = "var(--accent-green)"; // Verde (más del 50%)
+                } else if (percentageLeft > 0.2) {
+                    circle.style.stroke = "var(--accent-yellow)"; // Amarillo (entre 20% y 50%)
+                } else {
+                    circle.style.stroke = "var(--accent-red)"; // Rojo (menos del 20%)
+                }
+            }
+        }
+
+        // Pausa o reanuda el tiempo
+        function toggleTimerActive() {
+            isTimerPaused = !isTimerPaused;
+            const btn = document.getElementById('btn-timer-toggle');
+            if (btn) {
+                if (isTimerPaused) {
+                    btn.innerText = "Reanudar";
+                    btn.style.backgroundColor = "var(--accent-yellow)";
+                } else {
+                    btn.innerText = "Pausar";
+                    btn.style.backgroundColor = "var(--accent-green)";
+                }
+            }
+        }
+
+        // Suma o resta tiempo (en tramos de 15 segundos)
+        function adjustTimer(amount) {
+            timerSecondsLeft += amount;
+            if (timerSecondsLeft < 0) timerSecondsLeft = 0;
+            // Si sumamos tiempo, aumentamos la duración total de referencia para el círculo
+            if (amount > 0 && timerSecondsLeft > timerDuration) {
+                timerDuration = timerSecondsLeft;
+            }
+            updateFullscreenUI();
+        }
+
+        // Resetea al tiempo por defecto (120 segundos)
+        function resetTimerFullscreen() {
+            startFullscreenTimer(120);
+        }
+
+        // document.getElementById('timer-toggle-btn').innerText = `Iniciar (${formatTime(timerDuration)})`;
     </script>
     
     <!-- Registro del Service Worker para soporte Offline -->
