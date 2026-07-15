@@ -843,16 +843,16 @@
                 container.appendChild(row);
             });
         }
-
-        function openAddExerciseToTemplateModal() {
-            openCustomModal("Nombre del ejercicio", "Ej: Dominadas, Press...", function(name) {
+        function openAddExerciceToTemplateModal() {
+            openCustomModal("Nombre del ejercicio", "Ej: Dominadas, Press...", function(name, muscle) {
                 editingRoutineData.push({
                     name: name,
+                    muscle: muscle, // Guardamos el músculo seleccionado en la plantilla
                     note: '',
                     sets: [{ weight: 0, reps: 0, completed: false, prev: '-', type: 'N' }]
                 });
                 renderEditorExercises();
-            });
+            }, true); // Activamos el selector de músculos con este "true"
         }
 
         function removeExerciseFromEditor(idx) {
