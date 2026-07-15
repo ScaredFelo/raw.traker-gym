@@ -44,6 +44,7 @@
 
         body {
             padding: 16px;
+            padding-top: calc(16px + env(safe-area-inset-top)); /* Empuja el contenido hacia abajo de forma dinámica evitando la Isla Dinámica */
             padding-bottom: 160px;
         }
 
