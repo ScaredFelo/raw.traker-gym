@@ -1076,18 +1076,20 @@
                 renderWorkout();
             }
         }
-
+        
         function openAddExerciseSessionModal() {
-            openCustomModal("Añadir ejercicio a la sesión", "Ej: Curl de bíceps...", function(name) {
+            openCustomModal("Añadir ejercicio a la sesión", "Ej: Curl de bíceps...", function(name, muscle) {
                 currentWorkout.push({
                     name: name,
+                    muscle: muscle, // Guardamos el músculo seleccionado en tu sesión activa
                     note: '',
                     sets: [{ weight: 0, reps: 0, completed: false, prev: "-", type: 'N' }]
                 });
                 saveState();
                 renderWorkout();
-            });
+            }, true); // Activamos el selector de músculos con este "true"
         }
+
 
         function deleteExercise(exIndex) {
             if(confirm("¿Eliminar ejercicio?")) {
