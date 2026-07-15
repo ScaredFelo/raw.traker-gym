@@ -1258,10 +1258,12 @@
         renderWorkout();
 
         // ==================== LÓGICA DEL TEMPORIZADOR MAXIMIZADO ====================
-        let timerDuration = 90; // Tiempo por defecto (90 segundos)
+        let timerDuration = 90; // Tiempo de referencia total (en segundos)
         let timerSecondsLeft = 0;
         let timerInterval = null;
         let isTimerPaused = false;
+        let timerEndTime = 0; // Timestamp absoluto de cuándo debe terminar
+        let pausedTimeLeft = 0; // Segundos que quedaban al pausar
 
         // Abre o cierra el temporizador a pantalla completa
         function toggleTimerFullscreen(show) {
@@ -1279,12 +1281,13 @@
             }
         }
 
-        // Inicia la cuenta atrás con los segundos indicados
+        // Inicia la cuenta atrás con los segundos indicados usando tiempo absoluto
         function startFullscreenTimer(seconds) {
             clearInterval(timerInterval);
             timerDuration = seconds;
             timerSecondsLeft = seconds;
             isTimerPaused = false;
+            timerEndTime = Date.now() + (seconds * 1000); // Momento exacto de finalización
     
             const toggleBtn = document.getElementById('btn-timer-toggle');
             if (toggleBtn) {
@@ -1294,9 +1297,12 @@
     
             updateFullscreenUI();
 
+            // Ejecutamos el intervalo más rápido (cada 250ms) para que al volver responda al instante
             timerInterval = setInterval(() => {
                 if (!isTimerPaused) {
-                    timerSecondsLeft--;
+                    const msLeft = timerEndTime - Date.now();
+                    timerSecondsLeft = Math.max(0, Math.ceil(msLeft / 1000));
+            
                     updateFullscreenUI();
 
                     if (timerSecondsLeft <= 0) {
@@ -1305,7 +1311,7 @@
                         toggleTimerFullscreen(false); // Cierra al terminar
                     }
                 }
-            }, 1000);
+            }, 250);
         }
 
         // Actualiza el reloj digital, la barra inferior y el círculo gráfico
@@ -1325,51 +1331,76 @@
             const circle = document.getElementById('timer-progress-circle');
             if (circle) {
                 const totalCircumference = 282.74;
-                 const percentageLeft = timerSecondsLeft / timerDuration;
+                const percentageLeft = timerSecondsLeft / timerDuration;
                 const strokeDashoffset = totalCircumference * (1 - percentageLeft);
                 circle.style.strokeDashoffset = strokeDashoffset;
 
                 // 3. Cambios dinámicos de color según el tiempo restante (Verde -> Amarillo -> Rojo)
                 if (percentageLeft > 0.5) {
-                    circle.style.stroke = "var(--accent-green)"; // Verde (más del 50%)
+                    circle.style.stroke = "var(--accent-green)";
                 } else if (percentageLeft > 0.2) {
-                    circle.style.stroke = "var(--accent-yellow)"; // Amarillo (entre 20% y 50%)
+                    circle.style.stroke = "var(--accent-yellow)";
                 } else {
-                    circle.style.stroke = "var(--accent-red)"; // Rojo (menos del 20%)
+                    circle.style.stroke = "var(--accent-red)";
                 }
             }
         }
 
-        // Pausa o reanuda el tiempo
+        // Pausa o reanuda el tiempo recalculando el objetivo
         function toggleTimerActive() {
             isTimerPaused = !isTimerPaused;
             const btn = document.getElementById('btn-timer-toggle');
             if (btn) {
                 if (isTimerPaused) {
+                    pausedTimeLeft = timerSecondsLeft; // Congelamos los segundos restantes
                     btn.innerText = "Reanudar";
                     btn.style.backgroundColor = "var(--accent-yellow)";
                 } else {
+                    // Al reanudar, establecemos un nuevo final absoluto partiendo de ahora mismo
+                    timerEndTime = Date.now() + (pausedTimeLeft * 1000);
                     btn.innerText = "Pausar";
                     btn.style.backgroundColor = "var(--accent-green)";
                 }
-            }
+            }    
         }
 
-        // Suma o resta tiempo (en tramos de 15 segundos)
+        // Suma o resta tiempo de forma segura
         function adjustTimer(amount) {
-            timerSecondsLeft += amount;
-            if (timerSecondsLeft < 0) timerSecondsLeft = 0;
-            // Si sumamos tiempo, aumentamos la duración total de referencia para el círculo
-            if (amount > 0 && timerSecondsLeft > timerDuration) {
+            if (isTimerPaused) {
+                pausedTimeLeft += amount;
+                if (pausedTimeLeft < 0) pausedTimeLeft = 0;
+                timerSecondsLeft = pausedTimeLeft;
+            } else {
+                timerEndTime += (amount * 1000);
+                const msLeft = timerEndTime - Date.now();
+                timerSecondsLeft = Math.max(0, Math.ceil(msLeft / 1000));
+            }
+    
+            if (timerSecondsLeft > timerDuration) {
                 timerDuration = timerSecondsLeft;
             }
             updateFullscreenUI();
         }
 
-        // Resetea al tiempo por defecto (120 segundos)
+        // Resetea al tiempo por defecto (120 segundos para piernas/multiarticular)
         function resetTimerFullscreen() {
             startFullscreenTimer(120);
         }
+
+        // Detectar de forma inmediata cuando el móvil se desbloquea o vuelves a la pestaña
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && timerInterval && !isTimerPaused) {
+                const msLeft = timerEndTime - Date.now();
+                timerSecondsLeft = Math.max(0, Math.ceil(msLeft / 1000));
+                updateFullscreenUI();
+        
+                if (timerSecondsLeft <= 0) {
+                    clearInterval(timerInterval);
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                    toggleTimerFullscreen(false);
+                }
+            }
+        });
 
         // document.getElementById('timer-toggle-btn').innerText = `Iniciar (${formatTime(timerDuration)})`;
     </script>
