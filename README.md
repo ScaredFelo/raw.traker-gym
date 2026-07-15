@@ -46,8 +46,7 @@ This is a pure vanilla project engineered for speed, low overhead, and Zero-Depe
 Since the app runs on a strict Service Worker cache, when you push code updates to GitHub:
 
 1. Update the cache version in your `sw.js` file (e.g., change `const CACHE_NAME = 'raw-tracker-v18'` to `v19`).
-2. Open the app on your phone, navigate to the **Routines** (Plantillas) tab.
-3. Tap the red **"Restablecer Datos de Fábrica"** button to instantly clear the local storage and load the newest templates from the updated code[span_2](start_span)[span_2](end_span).
+2. Go to safari configuration an errase your history and site web data
 
 ---
 
