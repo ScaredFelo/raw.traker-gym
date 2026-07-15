@@ -514,17 +514,38 @@
 </head>
 <body>
 
-    <!-- MODAL INTERNO PARA ENTRADA DE TEXTO -->
+    <!-- MODAL INTERNO PARA ENTRADA DE TEXTO Y SELECCIÓN DE MÚSCULO -->
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-box">
             <div id="modal-title" class="modal-title">Introduce un valor</div>
             <input type="text" id="modal-input" placeholder="Escribe aquí...">
+            
+            <!-- Desplegable para seleccionar grupo muscular (se mostrará solo cuando haga falta) -->
+            <div id="modal-muscle-container" style="margin-top: 12px; display: none;">
+                <label style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 4px;">Grupo muscular:</label>
+                <select id="modal-muscle-select" style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px; font-size: 1rem; font-weight: 600; outline: none;">
+                    <option value="Pecho">Pecho</option>
+                    <option value="Triceps">Tríceps</option>
+                    <option value="Hombro frontal">Hombro frontal</option>
+                    <option value="Hombro lateral">Hombro lateral</option>
+                    <option value="Hombro posterior">Hombro posterior</option>
+                    <option value="Espalda">Espalda</option>
+                    <option value="Biceps">Bíceps</option>
+                    <option value="Quadriceps">Cuádriceps</option>
+                    <option value="Isquiotibiales">Isquiotibiales</option>
+                    <option value="Aductores">Aductores</option>
+                    <option value="Gemelos">Gemelos</option>
+                    <option value="Gluteo">Glúteo</option>
+                </select>
+            </div>
+
             <div class="modal-buttons">
                 <button class="btn" onclick="closeCustomModal()">Cancelar</button>
                 <button class="btn btn-success" id="modal-confirm-btn">Confirmar</button>
             </div>
         </div>
     </div>
+
 
     <!-- ==================== PÁGINA 1: ENTRENAR ==================== -->
     <div id="view-train" class="view active">
@@ -692,11 +713,21 @@
         let editingRoutineKey = null;
         let editingRoutineData = null;
 
-        function openCustomModal(title, placeholder, onConfirm) {
+        function openCustomModal(title, placeholder, onConfirm, showMuscleSelect = false) {
             document.getElementById('modal-title').innerText = title;
             const input = document.getElementById('modal-input');
             input.value = '';
             input.placeholder = placeholder;
+            
+            const muscleContainer = document.getElementById('modal-muscle-container');
+            const muscleSelect = document.getElementById('modal-muscle-select');
+            
+            if (showMuscleSelect) {
+                muscleContainer.style.display = 'block';
+                muscleSelect.value = 'Pecho'; // Valor por defecto
+            } else {
+                muscleContainer.style.display = 'none';
+            }
             
             document.getElementById('custom-modal').classList.add('active');
             input.focus();
@@ -704,7 +735,11 @@
             document.getElementById('modal-confirm-btn').onclick = function() {
                 const val = input.value.trim();
                 if (val) {
-                    onConfirm(val);
+                    if (showMuscleSelect) {
+                        onConfirm(val, muscleSelect.value);
+                    } else {
+                        onConfirm(val);
+                    }
                     closeCustomModal();
                 }
             };
