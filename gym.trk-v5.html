@@ -1257,13 +1257,76 @@
         loadState();
         renderWorkout();
 
-        // ==================== LÓGICA DEL TEMPORIZADOR MAXIMIZADO ====================
+                // ==================== LÓGICA DEL TEMPORIZADOR MAXIMIZADO ====================
         let timerDuration = 90; // Tiempo de referencia total (en segundos)
         let timerSecondsLeft = 0;
         let timerInterval = null;
         let isTimerPaused = false;
         let timerEndTime = 0; // Timestamp absoluto de cuándo debe terminar
         let pausedTimeLeft = 0; // Segundos que quedaban al pausar
+
+        // --- MOTOR DE AUDIO OFFLINE (SINTETIZADOR) ---
+        let audioCtx = null;
+
+        // Desbloquea el motor de audio en iOS tras el primer toque del usuario
+        function unlockAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtx = new AudioContext();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Escucha cualquier interacción para desbloquear el sonido de forma nativa en iOS
+        document.addEventListener('click', unlockAudio, { passive: true });
+        document.addEventListener('touchstart', unlockAudio, { passive: true });
+
+        // Genera un doble pitido electrónico limpio (880Hz / Nota La) de forma sintética
+        function playTimerSound() {
+            try {
+                unlockAudio();
+                if (!audioCtx) return;
+
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const now = audioCtx.currentTime;
+
+                // Primer Pitido (Beep corto)
+                const osc1 = audioCtx.createOscillator();
+                const gain1 = audioCtx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(880, now); // Frecuencia del pitido (agudo y limpio)
+                gain1.gain.setValueAtTime(0, now);
+                gain1.gain.linearRampToValueAtTime(0.15, now + 0.02); // Volumen rápido de entrada
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15); // Desvanecimiento suave
+                osc1.connect(gain1);
+                gain1.connect(audioCtx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.16);
+
+                // Segundo Pitido (250ms de retraso para el efecto doble "beep-beep")
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(880, now + 0.25);
+                gain2.gain.setValueAtTime(0, now + 0.25);
+                gain2.gain.linearRampToValueAtTime(0.15, now + 0.27);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.start(now + 0.25);
+                osc2.stop(now + 0.41);
+                
+            } catch (e) {
+                console.error("Error al reproducir el sonido del temporizador:", e);
+            }
+        }
 
         // Abre o cierra el temporizador a pantalla completa
         function toggleTimerFullscreen(show) {
@@ -1288,25 +1351,26 @@
             timerSecondsLeft = seconds;
             isTimerPaused = false;
             timerEndTime = Date.now() + (seconds * 1000); // Momento exacto de finalización
-    
+            
             const toggleBtn = document.getElementById('btn-timer-toggle');
             if (toggleBtn) {
                 toggleBtn.innerText = "Pausar";
                 toggleBtn.style.backgroundColor = "var(--accent-green)";
             }
-    
+            
             updateFullscreenUI();
 
-            // Ejecutamos el intervalo más rápido (cada 250ms) para que al volver responda al instante
+            // Ejecutamos el intervalo cada 250ms para una sincronización ultra-precisa
             timerInterval = setInterval(() => {
                 if (!isTimerPaused) {
                     const msLeft = timerEndTime - Date.now();
                     timerSecondsLeft = Math.max(0, Math.ceil(msLeft / 1000));
-            
+                    
                     updateFullscreenUI();
 
                     if (timerSecondsLeft <= 0) {
                         clearInterval(timerInterval);
+                        playTimerSound(); // <--- ¡AQUÍ HARÁ EL PITIDO ELECTRÓNICO!
                         if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
                         toggleTimerFullscreen(false); // Cierra al terminar
                     }
@@ -1323,7 +1387,7 @@
             // 1. Actualizar textos digitales (pantalla completa y barra inferior)
             const fullscreenDisplay = document.getElementById('fullscreen-timer-display');
             const barDisplay = document.getElementById('timer-display');
-    
+            
             if (fullscreenDisplay) fullscreenDisplay.innerText = formattedTime;
             if (barDisplay) barDisplay.innerText = formattedTime;
 
@@ -1361,7 +1425,7 @@
                     btn.innerText = "Pausar";
                     btn.style.backgroundColor = "var(--accent-green)";
                 }
-            }    
+            }
         }
 
         // Suma o resta tiempo de forma segura
@@ -1375,7 +1439,7 @@
                 const msLeft = timerEndTime - Date.now();
                 timerSecondsLeft = Math.max(0, Math.ceil(msLeft / 1000));
             }
-    
+            
             if (timerSecondsLeft > timerDuration) {
                 timerDuration = timerSecondsLeft;
             }
@@ -1393,14 +1457,17 @@
                 const msLeft = timerEndTime - Date.now();
                 timerSecondsLeft = Math.max(0, Math.ceil(msLeft / 1000));
                 updateFullscreenUI();
-        
+                
                 if (timerSecondsLeft <= 0) {
                     clearInterval(timerInterval);
-                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                    playTimerSound(); // <--- Pitido al volver si ya ha terminado
+                    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
                     toggleTimerFullscreen(false);
                 }
             }
         });
+
+        // document.getElementById('timer-toggle-btn').innerText = `Iniciar (${formatTime(timerDuration)})`;
 
         // document.getElementById('timer-toggle-btn').innerText = `Iniciar (${formatTime(timerDuration)})`;
     </script>
