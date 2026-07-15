@@ -1258,7 +1258,7 @@
         renderWorkout();
 
                 // ==================== LÓGICA DEL TEMPORIZADOR MAXIMIZADO ====================
-        let timerDuration = 90; // Tiempo de referencia total (en segundos)
+        let timerDuration = 120; // Tiempo de referencia total (en segundos)
         let timerSecondsLeft = 0;
         let timerInterval = null;
         let isTimerPaused = false;
@@ -1285,7 +1285,7 @@
         document.addEventListener('click', unlockAudio, { passive: true });
         document.addEventListener('touchstart', unlockAudio, { passive: true });
 
-        // Genera un doble pitido electrónico limpio (880Hz / Nota La) de forma sintética
+                // Genera un doble pitido electrónico limpio de alta potencia de forma sintética
         function playTimerSound() {
             try {
                 unlockAudio();
@@ -1297,14 +1297,14 @@
 
                 const now = audioCtx.currentTime;
 
-                // Primer Pitido (Beep corto)
+                // Primer Pitido (Beep corto y potente)
                 const osc1 = audioCtx.createOscillator();
                 const gain1 = audioCtx.createGain();
-                osc1.type = 'sine';
-                osc1.frequency.setValueAtTime(880, now); // Frecuencia del pitido (agudo y limpio)
+                osc1.type = 'triangle'; // Onda triangular: más cuerpo y presencia
+                osc1.frequency.setValueAtTime(950, now); // Pitch ligeramente más agudo para cortar el ruido
                 gain1.gain.setValueAtTime(0, now);
-                gain1.gain.linearRampToValueAtTime(0.15, now + 0.02); // Volumen rápido de entrada
-                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15); // Desvanecimiento suave
+                gain1.gain.linearRampToValueAtTime(0.7, now + 0.02); // <-- SUBIDO a 0.7 (70% de volumen)
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15); // Desvanecimiento limpio
                 osc1.connect(gain1);
                 gain1.connect(audioCtx.destination);
                 osc1.start(now);
@@ -1313,10 +1313,10 @@
                 // Segundo Pitido (250ms de retraso para el efecto doble "beep-beep")
                 const osc2 = audioCtx.createOscillator();
                 const gain2 = audioCtx.createGain();
-                osc2.type = 'sine';
-                osc2.frequency.setValueAtTime(880, now + 0.25);
+                osc2.type = 'triangle';
+                osc2.frequency.setValueAtTime(950, now + 0.25);
                 gain2.gain.setValueAtTime(0, now + 0.25);
-                gain2.gain.linearRampToValueAtTime(0.15, now + 0.27);
+                gain2.gain.linearRampToValueAtTime(0.7, now + 0.27); // <-- SUBIDO a 0.7
                 gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
                 osc2.connect(gain2);
                 gain2.connect(audioCtx.destination);
