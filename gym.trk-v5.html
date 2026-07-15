@@ -1219,56 +1219,15 @@
             container.innerHTML = svgHtml;
         }
 
-        // --- TIMER ---
-        let timerDuration = 120;
-        let timerRemaining = 0;
-        let timerInterval = null;
-        let isTimerRunning = false;
-
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        function startTimer(seconds) {
-            clearInterval(timerInterval);
-            timerRemaining = seconds;
-            isTimerRunning = true;
-            document.getElementById('timer-toggle-btn').innerText = "Pausa";
-            document.getElementById('timer-display').innerText = formatTime(timerRemaining);
-
-            timerInterval = setInterval(() => {
-                if (timerRemaining > 0) {
-                    timerRemaining--;
-                    document.getElementById('timer-display').innerText = formatTime(timerRemaining);
-                } else {
-                    clearInterval(timerInterval);
-                    isTimerRunning = false;
-                    document.getElementById('timer-toggle-btn').innerText = "Iniciar";
-                    if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
-                }
-            }, 1000);
-        }
-
-        function toggleTimer() {
-            if (isTimerRunning) {
-                clearInterval(timerInterval);
-                isTimerRunning = false;
-                document.getElementById('timer-toggle-btn').innerText = "Reanudar";
-            } else {
-                startTimer(timerRemaining > 0 ? timerRemaining : timerDuration);
+                function toggleSetComplete(exIndex, setIndex) {
+            const set = currentWorkout[exIndex].sets[setIndex];
+            set.completed = !set.completed;
+            if (set.completed) {
+                toggleTimerFullscreen(true);
+                startFullscreenTimer(120); // Abre y arranca el nuevo temporizador con 120s
             }
-        }
-
-        function adjustTimer(amount) {
-            if (isTimerRunning || timerRemaining > 0) {
-                timerRemaining = Math.max(0, timerRemaining + amount);
-                document.getElementById('timer-display').innerText = formatTime(timerRemaining);
-            } else {
-                timerDuration = Math.max(30, timerDuration + amount);
-                document.getElementById('timer-toggle-btn').innerText = `Iniciar (${formatTime(timerDuration)})`;
-            }
+            saveState();
+            renderWorkout();
         }
 
         // --- PERSISTENCIA ---
