@@ -867,6 +867,20 @@
             switchView('train', document.querySelectorAll('.nav-item')[0]);
         }
 
+        // AQUÍ LO PEGAS:
+        function startEmptyWorkout() {
+            if (currentWorkout && !confirm("¿Cambiar de rutina? Se perderá el progreso actual.")) return;
+            currentWorkoutName = "Personalizada";
+            currentWorkout = []; // Iniciamos el entrenamiento activo vacío
+        
+            document.getElementById('workout-title').innerText = "Sesión Personalizada";
+            document.getElementById('btn-finish').style.display = 'block';
+            document.getElementById('btn-add-exercise-session').style.display = 'block';
+            saveState();
+            renderWorkout();
+            switchView('train', document.querySelectorAll('.nav-item')[0]);
+        }
+
 
         function findLastCompletedExerciseData(exerciseName) {
             for (let session of history) {
