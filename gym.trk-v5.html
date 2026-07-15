@@ -641,46 +641,46 @@
     </nav>
 
     <script>
-        // --- PLANTILLAS ACTUALIZADAS CON TU RUTINA PPL/UL Y RANGOS OBJETIVO ---
+        // --- PLANTILLAS ACTUALIZADAS CON TU RUTINA PPL/UL Y CLASIFICACIÓN MUSCULAR ---
         const defaultTemplates = {
             'Push': [
-                { name: 'Press banca inclinado', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Elevaciones laterales', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Triceps Pushdowns', targetReps: '7-9', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Seated cable Fly', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Press militar', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Extension de triceps', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Press banca inclinado', muscle: 'Pecho', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Elevaciones laterales', muscle: 'Hombro lateral', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Triceps Pushdowns', muscle: 'Triceps', targetReps: '7-9', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Seated cable Fly', muscle: 'Pecho', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Press militar', muscle: 'Hombro frontal', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Extension de triceps', muscle: 'Triceps', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ],
             'Pull': [
-                { name: 'Jalon al pecho en polea', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Biceps en doble/simple polea', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Remo en cable', targetReps: '7-9', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Curl martillo en polea', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Remo smith', targetReps: '7-9', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Isolateral reverse fly polea', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Jalon al pecho en polea', muscle: 'Espalda', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Biceps en doble/simple polea', muscle: 'Biceps', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Remo en cable', muscle: 'Espalda', targetReps: '7-9', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Curl martillo en polea', muscle: 'Biceps', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Remo smith', muscle: 'Espalda', targetReps: '7-9', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Isolateral reverse fly polea', muscle: 'Hombro posterior', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ],
             'Legs': [
-                { name: 'Flexion de piernas estirado', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Press de piernas en maquina', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Elevacion de talones press', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Bulgaras', targetReps: '7-9', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Romanian dedlift (RDL)', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Flexion de piernas estirado', muscle: 'Isquiotibiales', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Press de piernas en maquina', muscle: 'Quadriceps', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Elevacion de talones press', muscle: 'Gemelos', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Bulgaras', muscle: 'Quadriceps', targetReps: '7-9', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Romanian dedlift (RDL)', muscle: 'Isquiotibiales', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] }
             ],
             'Upper': [
-                { name: 'Press banca inclinado', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Seated cable Fly', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Jalon al pecho en polea', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Elevaciones laterales', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Remo smith', targetReps: '7-9', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Extension de triceps', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Biceps en doble/simple polea', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Press banca inclinado', muscle: 'Pecho', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Seated cable Fly', muscle: 'Pecho', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Jalon al pecho en polea', muscle: 'Espalda', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Elevaciones laterales', muscle: 'Hombro lateral', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Remo smith', muscle: 'Espalda', targetReps: '7-9', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Extension de triceps', muscle: 'Triceps', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Biceps en doble/simple polea', muscle: 'Biceps', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ],
             'Lower': [
-                { name: 'Flexion de piernas (sentado)', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Sentadilla con barra smith', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Romanian dedlift (RDL)', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Extension de quadriceps', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Elevacion talones (sentado)', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Flexion de piernas (sentado)', muscle: 'Isquiotibiales', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Sentadilla con barra smith', muscle: 'Quadriceps', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Romanian dedlift (RDL)', muscle: 'Isquiotibiales', targetReps: '6-8', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Extension de quadriceps', muscle: 'Quadriceps', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Elevacion talones (sentado)', muscle: 'Gemelos', targetReps: '8-10', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ]
         };
 
