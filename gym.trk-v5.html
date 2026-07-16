@@ -555,11 +555,18 @@
         </div>
     </div>
 
-    <!-- ==================== PÁGINA 1: ENTRENAR ==================== -->
+    <!-- ==================== PÁGINA 1: ENTRENAR (CON CRONÓMETRO Y CANCELAR) ==================== -->
     <div id="view-train" class="view active">
-        <header>
-            <h1 id="workout-title">Sin Sesión Activa</h1>
-            <button id="btn-finish" class="btn btn-success" onclick="finishWorkout()" style="display: none;">Terminar</button>
+        <!-- HEADER ADAPTADO CON FLEXBOX PARA EVITAR CRAMPING EN MÓVIL -->
+        <header style="display: flex; flex-direction: column; align-items: stretch; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <h1 id="workout-title">Sin Sesión Activa</h1>
+                <span id="workout-timer-display" style="display: none; font-size: 1rem; font-family: monospace; color: var(--accent-yellow); font-weight: bold; letter-spacing: 0.5px;">⏱️ 00:00</span>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; width: 100%;">
+                <button id="btn-cancel" class="btn btn-danger" onclick="cancelWorkout()" style="display: none;">Cancelar</button>
+                <button id="btn-finish" class="btn btn-success" onclick="finishWorkout()" style="display: none;">Terminar</button>
+            </div>
         </header>
         <div id="workout-container">
             <div style="text-align: center; padding: 40px 10px; border: 1px dashed var(--border-color);">
@@ -747,6 +754,10 @@
         let currentWorkout = null; 
         let history = [];
 
+        // NUEVAS VARIABLES GLOBALES DE CRONÓMETRO DE SESIÓN[span_10](start_span)[span_10](end_span)
+        let workoutStartTime = null;
+        let workoutTimerInterval = null;
+
         let editingRoutineKey = null;
         let editingRoutineData = null;
 
@@ -924,7 +935,7 @@
 
         function cancelRoutineEditor() { switchView('routines'); }
 
-        // --- ENTRENAMIENTO ACTIVO ---
+        // --- ENTRENAMIENTO ACTIVO (NUEVOS DISPARADORES DE CRONÓMETRO) ---
         function startRoutine(key) {
             if (currentWorkout && !confirm("¿Cambiar de rutina? Se perderá el progreso actual.")) return;
             currentWorkoutName = key;
@@ -947,7 +958,14 @@
 
             document.getElementById('workout-title').innerText = `Sesión: ${key}`;
             document.getElementById('btn-finish').style.display = 'block';
+            document.getElementById('btn-cancel').style.display = 'block';
             document.getElementById('btn-add-exercise-session').style.display = 'block';
+            
+            // Iniciar cronómetro de sesión[span_11](start_span)[span_11](end_span)
+            workoutStartTime = Date.now();
+            localStorage.setItem('raw_gym_workout_start_time', workoutStartTime);
+            startWorkoutTimer();
+
             saveState();
             renderWorkout();
             switchView('train', document.querySelectorAll('.nav-item')[0]);
@@ -960,7 +978,14 @@
         
             document.getElementById('workout-title').innerText = "Sesión Personalizada";
             document.getElementById('btn-finish').style.display = 'block';
+            document.getElementById('btn-cancel').style.display = 'block';
             document.getElementById('btn-add-exercise-session').style.display = 'block';
+            
+            // Iniciar cronómetro de sesión vacía[span_12](start_span)[span_12](end_span)
+            workoutStartTime = Date.now();
+            localStorage.setItem('raw_gym_workout_start_time', workoutStartTime);
+            startWorkoutTimer();
+
             saveState();
             renderWorkout();
             switchView('train', document.querySelectorAll('.nav-item')[0]);
@@ -993,6 +1018,8 @@
                 `;
                 document.getElementById('workout-title').innerText = "Sin Sesión Activa";
                 document.getElementById('btn-finish').style.display = 'none';
+                document.getElementById('btn-cancel').style.display = 'none';
+                document.getElementById('workout-timer-display').style.display = 'none';
                 document.getElementById('btn-add-exercise-session').style.display = 'none';
                 return;
             }
@@ -1006,9 +1033,18 @@
                 `;
                 document.getElementById('workout-title').innerText = "Sesión Personalizada";
                 document.getElementById('btn-finish').style.display = 'block';
+                document.getElementById('btn-cancel').style.display = 'block';
+                document.getElementById('workout-timer-display').style.display = 'inline-block';
                 document.getElementById('btn-add-exercise-session').style.display = 'block';
                 return;
             }
+
+            // Forzar que los botones y cronómetro se pinten correctamente al recargar la página con sesión activa[span_13](start_span)[span_13](end_span)
+            document.getElementById('workout-title').innerText = currentWorkoutName ? `Sesión: ${currentWorkoutName}` : "Entrenamiento Activo";
+            document.getElementById('btn-finish').style.display = 'block';
+            document.getElementById('btn-cancel').style.display = 'block';
+            document.getElementById('workout-timer-display').style.display = 'inline-block';
+            document.getElementById('btn-add-exercise-session').style.display = 'block';
 
             currentWorkout.forEach((exercise, exIndex) => {
                 const card = document.createElement('div');
@@ -1158,17 +1194,40 @@
         function finishWorkout() {
             if(confirm("¿Guardar entrenamiento?")) {
                 const now = new Date();
+                
+                // Calcular tiempo total del entrenamiento[span_14](start_span)[span_14](end_span)
+                let durationStr = "00:00";
+                if (workoutStartTime) {
+                    const totalSeconds = Math.floor((Date.now() - workoutStartTime) / 1000);
+                    const hrs = Math.floor(totalSeconds / 3600);
+                    const mins = Math.floor((totalSeconds % 3600) / 60);
+                    const secs = totalSeconds % 60;
+                    if (hrs > 0) {
+                        durationStr = `${hrs}h ${mins}m`;
+                    } else {
+                        durationStr = `${mins}m ${secs}s`;
+                    }
+                }
+
                 const completedWorkout = {
                     timestamp: now.getTime(), 
                     date: now.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }),
                     monthName: now.toLocaleDateString('es-ES', { month: 'short' }).replace('.', ''), 
                     routineName: currentWorkoutName,
+                    duration: durationStr, // Guardar la duración de forma limpia[span_15](start_span)[span_15](end_span)
                     exercises: JSON.parse(JSON.stringify(currentWorkout))
                 };
                 history.unshift(completedWorkout);
                 localStorage.setItem('raw_gym_history', JSON.stringify(history));
 
                 const workoutToSaveAsTemplate = JSON.parse(JSON.stringify(currentWorkout));
+
+                // Limpiar cronómetros de sesión activa[span_16](start_span)[span_16](end_span)
+                clearInterval(workoutTimerInterval);
+                workoutStartTime = null;
+                localStorage.removeItem('raw_gym_workout_start_time');
+                document.getElementById('workout-timer-display').style.display = 'none';
+                document.getElementById('btn-cancel').style.display = 'none';
 
                 currentWorkout = null;
                 currentWorkoutName = "";
@@ -1359,13 +1418,18 @@
 
                 const globalIdx = history.findIndex(h => h.timestamp === workout.timestamp);
 
+                // Añadir el tag de duración de forma limpia y estilosa si existe[span_17](start_span)[span_17](end_span)
+                const durationText = workout.duration ? `<span style="font-size:0.8rem; color:var(--accent-yellow); font-family:monospace; margin-left:8px; font-weight:bold;">⏱️ ${workout.duration}</span>` : '';
+
                 div.innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:4px; margin-bottom: 6px;">
                         <span class="history-date">${workout.date}</span>
                         ${globalIdx !== -1 ? `<button class="btn" style="border:none; color:var(--accent-red); padding:2px; font-size:0.75rem;" onclick="deleteHistoryItem(${globalIdx})">Eliminar</button>` : ''}
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                        <h4 style="text-transform: uppercase; font-size:1rem; margin: 0;">${workout.routineName || "Personalizada"}</h4>
+                        <h4 style="text-transform: uppercase; font-size:1rem; margin: 0; display: flex; align-items: center;">
+                            ${workout.routineName || "Personalizada"}${durationText}
+                        </h4>
                         ${workout.routineName && templates[workout.routineName] ? `
                             <button class="btn btn-success" style="padding: 4px 10px; font-size: 0.7rem; font-weight: 700;" onclick="startRoutine('${workout.routineName}')">Entrenar</button>
                         ` : ''}
@@ -1537,10 +1601,12 @@
             const savedWorkout = localStorage.getItem('raw_gym_current_workout');
             const savedName = localStorage.getItem('raw_gym_current_name');
             const savedHistory = localStorage.getItem('raw_gym_history');
+            const savedStartTime = localStorage.getItem('raw_gym_workout_start_time');
 
             if (savedWorkout) currentWorkout = JSON.parse(savedWorkout);
             if (savedName) currentWorkoutName = savedName;
             if (savedHistory) history = JSON.parse(savedHistory);
+            if (savedStartTime) workoutStartTime = parseInt(savedStartTime);
         }
 
         // --- CÁLCULO Y RENDERIZADO DEL VOLUMEN MUSCULAR SEMANAL ---
@@ -1610,6 +1676,53 @@
 
             svgHtml += `</svg>`;
             container.innerHTML = svgHtml;
+        }
+
+        // --- SISTEMA DEL CRONÓMETRO DE ENTRENAMIENTO GLOBAL[span_18](start_span)[span_18](end_span) ---
+        function startWorkoutTimer() {
+            clearInterval(workoutTimerInterval);
+            const timerDisplay = document.getElementById('workout-timer-display');
+            if (!timerDisplay) return;
+
+            timerDisplay.style.display = 'inline-block';
+
+            function updateDisplay() {
+                if (!workoutStartTime) return;
+                const elapsedMs = Date.now() - workoutStartTime;
+                const totalSeconds = Math.floor(elapsedMs / 1000);
+                
+                const hrs = Math.floor(totalSeconds / 3600);
+                const mins = Math.floor((totalSeconds % 3600) / 60);
+                const secs = totalSeconds % 60;
+
+                let timeStr = "";
+                if (hrs > 0) {
+                    timeStr = `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                } else {
+                    timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                }
+                timerDisplay.innerText = `⏱️ ${timeStr}`;
+            }
+
+            updateDisplay();
+            workoutTimerInterval = setInterval(updateDisplay, 1000);
+        }
+
+        // --- ACCIÓN DE CANCELAR ENTRENAMIENTO[span_19](start_span)[span_19](end_span) ---
+        function cancelWorkout() {
+            if (confirm("⚠️ ¿Estás seguro de que quieres cancelar el entrenamiento? Se perderá todo el progreso de la sesión activa de hoy.")) {
+                clearInterval(workoutTimerInterval);
+                workoutStartTime = null;
+                localStorage.removeItem('raw_gym_workout_start_time');
+                
+                document.getElementById('workout-timer-display').style.display = 'none';
+                document.getElementById('btn-cancel').style.display = 'none';
+                
+                currentWorkout = null;
+                currentWorkoutName = "";
+                saveState();
+                renderWorkout();
+            }
         }
 
         // --- ALGORITMO OPTIMIZADO DE DISTRIBUCIÓN DE DISCOS (DYNAMICS) ---
@@ -1746,7 +1859,11 @@
             event.target.value = '';
         }
         
+        // --- INICIALIZACIÓN DE LA APLICACIÓN ---[span_20](start_span)[span_20](end_span)
         loadState();
+        if (currentWorkout !== null) {
+            startWorkoutTimer(); // Si hay una sesión activa al cargar la página, iniciar el contador en tiempo real[span_21](start_span)[span_21](end_span)
+        }
         renderWorkout();
 
         // ==================== LÓGICA DEL TEMPORIZADOR MAXIMIZADO ====================
