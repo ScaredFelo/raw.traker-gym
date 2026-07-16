@@ -756,7 +756,7 @@
         // VARIABLES DE CONTROL DE SESIÓN
         let workoutStartTime = null;
         let workoutTimerInterval = null;
-        let isWorkoutModified = false; // Bandera para rastrear cambios estructurales[span_5](start_span)[span_5](end_span)
+        let isWorkoutModified = false; 
 
         let editingRoutineKey = null;
         let editingRoutineData = null;
@@ -961,7 +961,6 @@
             document.getElementById('btn-cancel').style.display = 'block';
             document.getElementById('btn-add-exercise-session').style.display = 'block';
             
-            // Inicializar cronómetro y bandera de modificación estructural[span_6](start_span)[span_6](end_span)
             workoutStartTime = Date.now();
             localStorage.setItem('raw_gym_workout_start_time', workoutStartTime);
             isWorkoutModified = false;
@@ -983,7 +982,6 @@
             document.getElementById('btn-cancel').style.display = 'block';
             document.getElementById('btn-add-exercise-session').style.display = 'block';
             
-            // Inicializar cronómetro de sesión vacía[span_7](start_span)[span_7](end_span)
             workoutStartTime = Date.now();
             localStorage.setItem('raw_gym_workout_start_time', workoutStartTime);
             isWorkoutModified = false;
@@ -1010,7 +1008,7 @@
             if (currentWorkout === null) {
                 container.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 16px;">
-                        <div style="text-align: center; padding: 30px 10px; border: 1px dashed var(--border-color); background: var(--bg-card);;">
+                        <div style="text-align: center; padding: 30px 10px; border: 1px dashed var(--border-color); background: var(--bg-card);">
                             <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">🏋️ Entrenar con plantilla</p>
                             <button class="btn" onclick="switchView('routines', document.querySelectorAll('.nav-item')[1])">Seleccionar una Rutina</button>
                         </div>
@@ -1066,7 +1064,8 @@
                             <td style="font-size:0.8rem; color:var(--text-secondary);">${set.prev || '-'}</td>
                             <td>
                                 <input type="number" step="0.25" value="${set.weight}" oninput="updateSetWeightRealtime(${exIndex}, ${setIndex}, this.value)" onchange="updateSetData(${exIndex}, ${setIndex}, 'weight', this.value)">
-                                <div id="helper-${exIndex}-${setIndex}" style="font-size: 0.6rem; color: var(--accent-green); margin-top: 2px; font-weight: 700;">
+                                <!-- CONTENEDOR SIN COLOR FORZADO PARA PERMITIR INLINE SPANS -->
+                                <div id="helper-${exIndex}-${setIndex}" style="font-size: 0.65rem; margin-top: 4px; font-weight: 800; font-family: monospace;">
                                     ${calculateWeightHelper(set.weight, exercise.equipType)}
                                 </div>
                             </td>
@@ -1106,6 +1105,7 @@
             saveState();
         }
 
+        // CAMBIADO A innerHTML PARA SOPORTAR LOS COLORES DINÁMICOS EN TIEMPO REAL
         function updateSetWeightRealtime(exIndex, setIndex, value) {
             let val = parseFloat(value) || 0;
             currentWorkout[exIndex].sets[setIndex].weight = val;
@@ -1113,7 +1113,7 @@
             
             const helperEl = document.getElementById(`helper-${exIndex}-${setIndex}`);
             if (helperEl) {
-                helperEl.innerText = calculateWeightHelper(val, currentWorkout[exIndex].equipType);
+                helperEl.innerHTML = calculateWeightHelper(val, currentWorkout[exIndex].equipType);
             }
         }
 
@@ -1150,7 +1150,6 @@
             renderWorkout();
         }
 
-        // Acciones Estructurales: Activan bandera de modificación[span_8](start_span)[span_8](end_span)
         function addSet(exIndex) {
             const sets = currentWorkout[exIndex].sets;
             const lastSet = sets[sets.length - 1] || { weight: 0, reps: 0, type: 'N' };
@@ -1203,7 +1202,6 @@
             }
         }
 
-        // --- SISTEMA INTELIGENTE DE CIERRE DE SESIÓN ---[span_9](start_span)[span_9](end_span)
         function finishWorkout() {
             if(confirm("¿Guardar entrenamiento?")) {
                 const now = new Date();
@@ -1233,9 +1231,8 @@
                 localStorage.setItem('raw_gym_history', JSON.stringify(history));
 
                 const workoutToSaveAsTemplate = JSON.parse(JSON.stringify(currentWorkout));
-                const oldWorkoutName = currentWorkoutName; // Almacenamos antes de limpiar variables
+                const oldWorkoutName = currentWorkoutName;
 
-                // Limpiar cronómetros de sesión activa
                 clearInterval(workoutTimerInterval);
                 workoutStartTime = null;
                 localStorage.removeItem('raw_gym_workout_start_time');
@@ -1249,11 +1246,8 @@
                 renderWorkout();
                 switchView('history', document.querySelectorAll('.nav-item')[2]);
 
-                // Procesamiento inteligente de ventanas emergentes según tus 3 opciones
                 if (workoutToSaveAsTemplate.length > 0) {
                     setTimeout(() => {
-                        
-                        // OPCIÓN 3: Entrenar sobre la marcha ("Personalizada") -> Pregunta si crear una nueva plantilla
                         if (oldWorkoutName === "Personalizada") {
                             if (confirm("¿Quieres guardar este entrenamiento como una nueva plantilla de rutina para usarla en el futuro?")) {
                                 openCustomModal("Nombre de la nueva rutina", "Ej: Empuje B, Torso...", function(routineName) {
@@ -1283,8 +1277,6 @@
                                 });
                             }
                         } 
-                        
-                        // OPCIÓN 2: Venía de una plantilla existente Y sufrió modificaciones estructurales -> Pregunta si sobreescribir la existente
                         else if (templates[oldWorkoutName] && isWorkoutModified) {
                             if (confirm(`¿Quieres actualizar la plantilla de la rutina "${oldWorkoutName}" con los cambios de series o ejercicios de hoy?`)) {
                                 const cleanTemplate = workoutToSaveAsTemplate.map(ex => ({
@@ -1307,8 +1299,6 @@
                                 alert(`¡Plantilla de rutina "${oldWorkoutName}" actualizada correctamente!`);
                             }
                         }
-                        
-                        // OPCIÓN 1: Venía de una plantilla existente y NO se modificó nada -> Silencio total, directo al historial sin molestar[span_10](start_span)[span_10](end_span)
                         isWorkoutModified = false;
                     }, 400);
                 }
@@ -1573,7 +1563,7 @@
         function buildSingleSvgChart(containerId, points) {
             const container = document.getElementById(containerId);
             if (points.length === 0) {
-                container.innerHTML = `<div style="color:var(--text-secondary); text-align:center; padding:30px; font-size:0.85rem; background: var(--bg-main); border:1px solid var(--border-color);">Sin registros completados en este periodo.</div>`;
+                container.innerHTML = `<div style="color:var(--text-secondary); text-align:center; padding:30px; font-size:0.85rem; background: var(--bg-main); border:1px solid var(--border-color);");">Sin registros completados en este periodo.</div>`;
                 return;
             }
 
@@ -1805,36 +1795,50 @@
             return result.sort((a,b) => parseFloat(b) - parseFloat(a));
         }
 
+        // REESCRITO CON PARSEO CROMÁTICO AVANZADO PARA CADA TIPO DE DISCO SEGN EL ESTÁNDAR COMPRENSIVO
         function getDisksCombination(totalWeight, baseWeight) {
             let netWeight = totalWeight - baseWeight;
-            if (netWeight < 0) return '⚠️ < bar';
+            if (netWeight < 0) return '<span style="color: var(--accent-red);">⚠️ &lt; bar</span>';
             
             let targetPerSide = netWeight / 2;
             
             let totalCents = Math.round(totalWeight * 100);
             let baseCents = Math.round(baseWeight * 100);
             if ((totalCents - baseCents) % 250 !== 0) {
-                return '⚠️ Peso';
+                return '<span style="color: var(--accent-red);">⚠️ Peso</span>';
             }
             
-            if (targetPerSide === 0) return 'Barra';
+            if (targetPerSide === 0) return '<span style="color: var(--text-secondary); text-transform: uppercase;">Barra sola</span>';
             
             let disks = getMinDisks(targetPerSide);
-            if (!disks) return '⚠️ Err';
+            if (!disks) return '<span style="color: var(--accent-red);">⚠️ Err</span>';
             
-            return `${disks.join('+')}`;
+            // Mapeo estricto de colores por disco individual
+            let coloredDisks = disks.map(d => {
+                let color = '#ffffff';
+                if (d === '25') color = 'var(--accent-red)';      // Rojo
+                else if (d === '20') color = 'var(--accent-blue)';     // Azul
+                else if (d === '10') color = 'var(--accent-green)';    // Verde
+                else if (d === '5') color = '#ffffff';                 // Blanco
+                else if (d === '2.5') color = '#ff9f0a';               // Naranja (iOS Dark System)
+                else if (d === '1.25') color = '#ff375f';              // Rosa (iOS Dark System)
+                return `<span style="color: ${color};">${d}</span>`;
+            });
+            
+            return coloredDisks.join('<span style="color: var(--text-secondary); margin: 0 2px;">+</span>');
         }
 
+        // PARSEO DE SECCIONES FIJAS (MANCUERNAS, CABLES, FIJAS) CON COLOR AMARILLO SISTÉMICO PARA LOS NÚMEROS
         function calculateWeightHelper(weight, equipType) {
             if (!weight || weight <= 0) return '';
             
             switch (equipType) {
                 case 'dumbbell':
-                    return `Manc. ${weight}`;
+                    return `<span style="color: var(--text-secondary); text-transform: uppercase;">Manc.</span> <span style="color: var(--accent-yellow);">${weight}</span>`;
                 case 'cable':
-                    return `Plac. ${weight}`;
+                    return `<span style="color: var(--text-secondary); text-transform: uppercase;">Plac.</span> <span style="color: var(--accent-yellow);">${weight}</span>`;
                 case 'fixed-bar':
-                    return `Fija ${weight}`;
+                    return `<span style="color: var(--text-secondary); text-transform: uppercase;">Fija</span> <span style="color: var(--accent-yellow);">${weight}</span>`;
                 case 'smith':
                     return getDisksCombination(weight, 0);
                 case 'plate-machine':
