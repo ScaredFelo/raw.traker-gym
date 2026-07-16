@@ -1808,13 +1808,20 @@
                 return '<span style="color: var(--accent-red);">⚠️ Peso</span>';
             }
             
-            if (targetPerSide === 0) return '<span style="color: var(--text-secondary); text-transform: uppercase;">Barra sola</span>';
+            // Si no hay discos adicionales (solo la barra)
+            if (targetPerSide === 0) {
+                if (baseWeight > 0) {
+                    return `<span style="color: #ffd700; font-weight: 800; text-transform: uppercase;">Barra(${baseWeight})</span>`;
+                }
+                return '<span style="color: var(--text-secondary); text-transform: uppercase;">Barra sola</span>';
+            }
             
             let disks = getMinDisks(targetPerSide);
             if (!disks) return '<span style="color: var(--accent-red);">⚠️ Err</span>';
             
-            // Mapeo estricto de colores por disco individual
+            // Mapeo estricto de colores por disco individual usando comas para decimales
             let coloredDisks = disks.map(d => {
+                let displayVal = d.replace('.', ','); // Cambiamos el punto por coma (ej: 2,5 o 1,25)
                 let color = '#ffffff';
                 if (d === '25') color = 'var(--accent-red)';      // Rojo
                 else if (d === '20') color = 'var(--accent-blue)';     // Azul
@@ -1822,10 +1829,21 @@
                 else if (d === '5') color = '#ffffff';                 // Blanco
                 else if (d === '2.5') color = '#ff9f0a';               // Naranja (iOS Dark System)
                 else if (d === '1.25') color = '#ff375f';              // Rosa (iOS Dark System)
-                return `<span style="color: ${color};">${d}</span>`;
+                return `<span style="color: ${color};">${displayVal}</span>`;
             });
             
-            return coloredDisks.join('<span style="color: var(--text-secondary); margin: 0 2px;">+</span>');
+            let disksJoined = coloredDisks.join('<span style="color: var(--text-secondary); margin: 0 2px;">+</span>');
+            
+            // Si usamos una barra base con peso, mostramos el formato Barra(Peso)+(Discos)x2 con Barra en dorado
+            if (baseWeight > 0) {
+                return `<span style="color: #ffd700; font-weight: 800;">Barra(${baseWeight})</span>` +
+                       `<span style="color: var(--text-secondary); margin: 0 2px;">+</span>` +
+                       `<span style="color: var(--text-secondary);">(</span>` +
+                       `${disksJoined}` +
+                       `<span style="color: var(--text-secondary);">)x2</span>`;
+            } else {
+                return disksJoined;
+            }
         }
 
         // PARSEO DE SECCIONES FIJAS (MANCUERNAS, CABLES, FIJAS) CON COLOR AMARILLO SISTÉMICO PARA LOS NÚMEROS
