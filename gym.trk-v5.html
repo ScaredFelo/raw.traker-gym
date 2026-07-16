@@ -1421,6 +1421,64 @@
             container.innerHTML = svgHtml;
         }
 
+        // >>> AQUÍ PEGAS LAS NUEVAS FUNCIONES DE BACKUP <<<
+        function exportGymData() {
+            const backupData = {
+                templates: JSON.parse(localStorage.getItem('raw_gym_templates') || '{}'),
+                history: JSON.parse(localStorage.getItem('raw_gym_history') || '[]')
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            const dateStr = new Date().toISOString().slice(0, 10);
+            
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `raw_tracker_backup_${dateStr}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function triggerImportFileInput() {
+            document.getElementById('import-file-input').click();
+        }
+
+        function importGymData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    if (!importedData.templates || !importedData.history) {
+                        alert("Error: El archivo seleccionado no tiene el formato correcto de RAW TRACKER.");
+                        return;
+                    }
+
+                    if (confirm("⚠️ ¿Estás seguro de que quieres importar estos datos? Esto borrará el historial y las plantillas actuales de este dispositivo.")) {
+                        localStorage.setItem('raw_gym_templates', JSON.stringify(importedData.templates));
+                        localStorage.setItem('raw_gym_history', JSON.stringify(importedData.history));
+                        
+                        loadState();
+                        renderRoutines();
+                        renderHistory();
+                        renderWeeklyMuscleVolume();
+                        renderWorkout();
+                        
+                        alert("¡Datos importados con éxito! Tu progreso se ha restaurado.");
+                    }
+                } catch (err) {
+                    alert("Error crítico al procesar el archivo. Asegúrate de que es un archivo .json válido.");
+                    console.error(err);
+                }
+            };
+            
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+        
         loadState();
         renderWorkout();
 
