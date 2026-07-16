@@ -557,7 +557,6 @@
 
     <!-- ==================== PÁGINA 1: ENTRENAR (CON CRONÓMETRO Y CANCELAR) ==================== -->
     <div id="view-train" class="view active">
-        <!-- HEADER ADAPTADO CON FLEXBOX PARA EVITAR CRAMPING EN MÓVIL -->
         <header style="display: flex; flex-direction: column; align-items: stretch; gap: 8px;">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <h1 id="workout-title">Sin Sesión Activa</h1>
@@ -754,9 +753,10 @@
         let currentWorkout = null; 
         let history = [];
 
-        // NUEVAS VARIABLES GLOBALES DE CRONÓMETRO DE SESIÓN[span_10](start_span)[span_10](end_span)
+        // VARIABLES DE CONTROL DE SESIÓN
         let workoutStartTime = null;
         let workoutTimerInterval = null;
+        let isWorkoutModified = false; // Bandera para rastrear cambios estructurales[span_5](start_span)[span_5](end_span)
 
         let editingRoutineKey = null;
         let editingRoutineData = null;
@@ -935,7 +935,7 @@
 
         function cancelRoutineEditor() { switchView('routines'); }
 
-        // --- ENTRENAMIENTO ACTIVO (NUEVOS DISPARADORES DE CRONÓMETRO) ---
+        // --- ENTRENAMIENTO ACTIVO ---
         function startRoutine(key) {
             if (currentWorkout && !confirm("¿Cambiar de rutina? Se perderá el progreso actual.")) return;
             currentWorkoutName = key;
@@ -961,9 +961,11 @@
             document.getElementById('btn-cancel').style.display = 'block';
             document.getElementById('btn-add-exercise-session').style.display = 'block';
             
-            // Iniciar cronómetro de sesión[span_11](start_span)[span_11](end_span)
+            // Inicializar cronómetro y bandera de modificación estructural[span_6](start_span)[span_6](end_span)
             workoutStartTime = Date.now();
             localStorage.setItem('raw_gym_workout_start_time', workoutStartTime);
+            isWorkoutModified = false;
+            localStorage.setItem('raw_gym_is_modified', 'false');
             startWorkoutTimer();
 
             saveState();
@@ -981,9 +983,11 @@
             document.getElementById('btn-cancel').style.display = 'block';
             document.getElementById('btn-add-exercise-session').style.display = 'block';
             
-            // Iniciar cronómetro de sesión vacía[span_12](start_span)[span_12](end_span)
+            // Inicializar cronómetro de sesión vacía[span_7](start_span)[span_7](end_span)
             workoutStartTime = Date.now();
             localStorage.setItem('raw_gym_workout_start_time', workoutStartTime);
+            isWorkoutModified = false;
+            localStorage.setItem('raw_gym_is_modified', 'false');
             startWorkoutTimer();
 
             saveState();
@@ -1006,7 +1010,7 @@
             if (currentWorkout === null) {
                 container.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 16px;">
-                        <div style="text-align: center; padding: 30px 10px; border: 1px dashed var(--border-color); background: var(--bg-card);">
+                        <div style="text-align: center; padding: 30px 10px; border: 1px dashed var(--border-color); background: var(--bg-card);;">
                             <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">🏋️ Entrenar con plantilla</p>
                             <button class="btn" onclick="switchView('routines', document.querySelectorAll('.nav-item')[1])">Seleccionar una Rutina</button>
                         </div>
@@ -1039,7 +1043,6 @@
                 return;
             }
 
-            // Forzar que los botones y cronómetro se pinten correctamente al recargar la página con sesión activa[span_13](start_span)[span_13](end_span)
             document.getElementById('workout-title').innerText = currentWorkoutName ? `Sesión: ${currentWorkoutName}` : "Entrenamiento Activo";
             document.getElementById('btn-finish').style.display = 'block';
             document.getElementById('btn-cancel').style.display = 'block';
@@ -1147,6 +1150,7 @@
             renderWorkout();
         }
 
+        // Acciones Estructurales: Activan bandera de modificación[span_8](start_span)[span_8](end_span)
         function addSet(exIndex) {
             const sets = currentWorkout[exIndex].sets;
             const lastSet = sets[sets.length - 1] || { weight: 0, reps: 0, type: 'N' };
@@ -1157,6 +1161,8 @@
                 prev: lastSet.weight ? `${lastSet.weight} kg x ${lastSet.reps}` : '-',
                 type: lastSet.type || 'N'
             });
+            isWorkoutModified = true;
+            localStorage.setItem('raw_gym_is_modified', 'true');
             saveState();
             renderWorkout();
         }
@@ -1164,6 +1170,8 @@
         function deleteSet(exIndex, setIndex) {
             if (confirm(`¿Eliminar la serie ${setIndex + 1}?`)) {
                 currentWorkout[exIndex].sets.splice(setIndex, 1);
+                isWorkoutModified = true;
+                localStorage.setItem('raw_gym_is_modified', 'true');
                 saveState();
                 renderWorkout();
             }
@@ -1178,6 +1186,8 @@
                     note: '',
                     sets: [{ weight: 0, reps: 0, completed: false, prev: "-", type: 'N' }]
                 });
+                isWorkoutModified = true;
+                localStorage.setItem('raw_gym_is_modified', 'true');
                 saveState();
                 renderWorkout();
             }, true, true);
@@ -1186,16 +1196,18 @@
         function deleteExercise(exIndex) {
             if(confirm("¿Eliminar ejercicio?")) {
                 currentWorkout.splice(exIndex, 1);
+                isWorkoutModified = true;
+                localStorage.setItem('raw_gym_is_modified', 'true');
                 saveState();
                 renderWorkout();
             }
         }
 
+        // --- SISTEMA INTELIGENTE DE CIERRE DE SESIÓN ---[span_9](start_span)[span_9](end_span)
         function finishWorkout() {
             if(confirm("¿Guardar entrenamiento?")) {
                 const now = new Date();
                 
-                // Calcular tiempo total del entrenamiento[span_14](start_span)[span_14](end_span)
                 let durationStr = "00:00";
                 if (workoutStartTime) {
                     const totalSeconds = Math.floor((Date.now() - workoutStartTime) / 1000);
@@ -1214,18 +1226,20 @@
                     date: now.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }),
                     monthName: now.toLocaleDateString('es-ES', { month: 'short' }).replace('.', ''), 
                     routineName: currentWorkoutName,
-                    duration: durationStr, // Guardar la duración de forma limpia[span_15](start_span)[span_15](end_span)
+                    duration: durationStr,
                     exercises: JSON.parse(JSON.stringify(currentWorkout))
                 };
                 history.unshift(completedWorkout);
                 localStorage.setItem('raw_gym_history', JSON.stringify(history));
 
                 const workoutToSaveAsTemplate = JSON.parse(JSON.stringify(currentWorkout));
+                const oldWorkoutName = currentWorkoutName; // Almacenamos antes de limpiar variables
 
-                // Limpiar cronómetros de sesión activa[span_16](start_span)[span_16](end_span)
+                // Limpiar cronómetros de sesión activa
                 clearInterval(workoutTimerInterval);
                 workoutStartTime = null;
                 localStorage.removeItem('raw_gym_workout_start_time');
+                localStorage.removeItem('raw_gym_is_modified');
                 document.getElementById('workout-timer-display').style.display = 'none';
                 document.getElementById('btn-cancel').style.display = 'none';
 
@@ -1235,20 +1249,24 @@
                 renderWorkout();
                 switchView('history', document.querySelectorAll('.nav-item')[2]);
 
+                // Procesamiento inteligente de ventanas emergentes según tus 3 opciones
                 if (workoutToSaveAsTemplate.length > 0) {
                     setTimeout(() => {
-                        if (confirm("¿Quieres guardar este entrenamiento como una nueva plantilla de rutina para usarla en el futuro?")) {
-                            openCustomModal("Nombre de la nueva rutina", "Ej: Empuje B, Torso...", function(routineName) {
-                                if (templates[routineName]) {
-                                    alert("Ya existe una plantilla de rutina con ese nombre. No se ha podido guardar.");
-                                    return;
-                                }
-                                
-                                const cleanTemplate = workoutToSaveAsTemplate.map(ex => {
-                                    return {
+                        
+                        // OPCIÓN 3: Entrenar sobre la marcha ("Personalizada") -> Pregunta si crear una nueva plantilla
+                        if (oldWorkoutName === "Personalizada") {
+                            if (confirm("¿Quieres guardar este entrenamiento como una nueva plantilla de rutina para usarla en el futuro?")) {
+                                openCustomModal("Nombre de la nueva rutina", "Ej: Empuje B, Torso...", function(routineName) {
+                                    if (templates[routineName]) {
+                                        alert("Ya existe una plantilla de rutina con ese nombre. No se ha podido guardar.");
+                                        return;
+                                    }
+                                    
+                                    const cleanTemplate = workoutToSaveAsTemplate.map(ex => ({
                                         name: ex.name,
                                         targetReps: ex.targetReps || '8-10',
                                         equipType: ex.equipType || 'dumbbell',
+                                        muscle: ex.muscle || 'Pecho',
                                         note: ex.note || '',
                                         sets: ex.sets.map(s => ({
                                             weight: 0,
@@ -1257,21 +1275,48 @@
                                             prev: '-',
                                             type: 'N'
                                         }))
-                                    };
-                                });
+                                    }));
 
-                                templates[routineName] = cleanTemplate;
+                                    templates[routineName] = cleanTemplate;
+                                    saveTemplates();
+                                    alert(`¡Rutina "${routineName}" guardada correctamente en tus Plantillas!`);
+                                });
+                            }
+                        } 
+                        
+                        // OPCIÓN 2: Venía de una plantilla existente Y sufrió modificaciones estructurales -> Pregunta si sobreescribir la existente
+                        else if (templates[oldWorkoutName] && isWorkoutModified) {
+                            if (confirm(`¿Quieres actualizar la plantilla de la rutina "${oldWorkoutName}" con los cambios de series o ejercicios de hoy?`)) {
+                                const cleanTemplate = workoutToSaveAsTemplate.map(ex => ({
+                                    name: ex.name,
+                                    targetReps: ex.targetReps || '8-10',
+                                    equipType: ex.equipType || 'dumbbell',
+                                    muscle: ex.muscle || 'Pecho',
+                                    note: ex.note || '',
+                                    sets: ex.sets.map(s => ({
+                                        weight: 0,
+                                        reps: s.reps || 8,
+                                        completed: false,
+                                        prev: '-',
+                                        type: 'N'
+                                    }))
+                                }));
+
+                                templates[oldWorkoutName] = cleanTemplate;
                                 saveTemplates();
-                                alert(`¡Rutina "${routineName}" guardada correctamente en tus Plantillas!`);
-                            });
+                                alert(`¡Plantilla de rutina "${oldWorkoutName}" actualizada correctamente!`);
+                            }
                         }
+                        
+                        // OPCIÓN 1: Venía de una plantilla existente y NO se modificó nada -> Silencio total, directo al historial sin molestar[span_10](start_span)[span_10](end_span)
+                        isWorkoutModified = false;
                     }, 400);
                 }
             }
         }
 
         // --- HISTORIAL CON CALENDARIO INTERACTIVO ---
-        let currentCalendarDate = new Date(); // Controla qué mes estamos visualizando
+        let currentCalendarDate = new Date(); 
 
         function renderHistory() {
             const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -1417,8 +1462,6 @@
                 });
 
                 const globalIdx = history.findIndex(h => h.timestamp === workout.timestamp);
-
-                // Añadir el tag de duración de forma limpia y estilosa si existe[span_17](start_span)[span_17](end_span)
                 const durationText = workout.duration ? `<span style="font-size:0.8rem; color:var(--accent-yellow); font-family:monospace; margin-left:8px; font-weight:bold;">⏱️ ${workout.duration}</span>` : '';
 
                 div.innerHTML = `
@@ -1602,11 +1645,13 @@
             const savedName = localStorage.getItem('raw_gym_current_name');
             const savedHistory = localStorage.getItem('raw_gym_history');
             const savedStartTime = localStorage.getItem('raw_gym_workout_start_time');
+            const savedModified = localStorage.getItem('raw_gym_is_modified');
 
             if (savedWorkout) currentWorkout = JSON.parse(savedWorkout);
             if (savedName) currentWorkoutName = savedName;
             if (savedHistory) history = JSON.parse(savedHistory);
             if (savedStartTime) workoutStartTime = parseInt(savedStartTime);
+            if (savedModified) isWorkoutModified = (savedModified === 'true');
         }
 
         // --- CÁLCULO Y RENDERIZADO DEL VOLUMEN MUSCULAR SEMANAL ---
@@ -1678,7 +1723,7 @@
             container.innerHTML = svgHtml;
         }
 
-        // --- SISTEMA DEL CRONÓMETRO DE ENTRENAMIENTO GLOBAL[span_18](start_span)[span_18](end_span) ---
+        // --- SISTEMA DEL CRONÓMETRO DE ENTRENAMIENTO GLOBAL ---
         function startWorkoutTimer() {
             clearInterval(workoutTimerInterval);
             const timerDisplay = document.getElementById('workout-timer-display');
@@ -1708,12 +1753,14 @@
             workoutTimerInterval = setInterval(updateDisplay, 1000);
         }
 
-        // --- ACCIÓN DE CANCELAR ENTRENAMIENTO[span_19](start_span)[span_19](end_span) ---
+        // --- ACCIÓN DE CANCELAR ENTRENAMIENTO ---
         function cancelWorkout() {
             if (confirm("⚠️ ¿Estás seguro de que quieres cancelar el entrenamiento? Se perderá todo el progreso de la sesión activa de hoy.")) {
                 clearInterval(workoutTimerInterval);
                 workoutStartTime = null;
+                isWorkoutModified = false;
                 localStorage.removeItem('raw_gym_workout_start_time');
+                localStorage.removeItem('raw_gym_is_modified');
                 
                 document.getElementById('workout-timer-display').style.display = 'none';
                 document.getElementById('btn-cancel').style.display = 'none';
@@ -1859,10 +1906,10 @@
             event.target.value = '';
         }
         
-        // --- INICIALIZACIÓN DE LA APLICACIÓN ---[span_20](start_span)[span_20](end_span)
+        // --- INICIALIZACIÓN DE LA APLICACIÓN ---
         loadState();
         if (currentWorkout !== null) {
-            startWorkoutTimer(); // Si hay una sesión activa al cargar la página, iniciar el contador en tiempo real[span_21](start_span)[span_21](end_span)
+            startWorkoutTimer(); 
         }
         renderWorkout();
 
