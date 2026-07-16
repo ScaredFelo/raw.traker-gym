@@ -582,12 +582,31 @@
         <button class="btn btn-block" style="margin-top: 8px; background: transparent;" onclick="cancelRoutineEditor()">Cancelar</button>
     </div>
 
-        <!-- ==================== PÁGINA 3: HISTORIAL ==================== -->
+    <!-- ==================== PÁGINA 3: HISTORIAL (CALENDARIO INTERACTIVO) ==================== -->
     <div id="view-history" class="view">
         <header>
             <h1>Historial</h1>
         </header>
-        <div id="history-container" style="margin-bottom: 25px;"></div>
+        
+        <!-- CONTENEDOR DEL CALENDARIO INTERACTIVO -->
+        <div class="chart-display-area" style="margin-bottom: 16px; padding: 14px; background: var(--bg-card); border-style: solid;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <button class="btn" style="padding: 4px 12px; font-weight: bold;" onclick="changeCalendarMonth(-1)">◀</button>
+                <h3 id="calendar-month-year" style="text-transform: uppercase; font-size: 1rem; color: var(--text-primary); font-weight: 800; letter-spacing: 1px;">-</h3>
+                <button class="btn" style="padding: 4px 12px; font-weight: bold;" onclick="changeCalendarMonth(1)">▶</button>
+            </div>
+            
+            <!-- Cabecera de días de la semana -->
+            <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                <div>Lu</div><div>Ma</div><div>Mi</div><div>Ju</div><div>Vi</div><div>Sá</div><div>Do</div>
+            </div>
+            
+            <!-- Grid del mes -->
+            <div id="calendar-days-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center;"></div>
+        </div>
+
+        <!-- DETALLES DE LAS SESIONES DEL DÍA SELECCIONADO -->
+        <div id="calendar-day-details" style="margin-bottom: 25px;"></div>
 
         <!-- PANEL DE COPIA DE SEGURIDAD (IMPORTAR/EXPORTAR) -->
         <div class="chart-display-area" style="margin-top: 20px; border-style: solid; padding: 14px; background: var(--bg-card);">
@@ -596,7 +615,6 @@
                 <button class="btn btn-block" style="margin-top: 0; flex: 1; border-color: var(--accent-blue); color: var(--accent-blue);" onclick="exportGymData()">Exportar Datos</button>
                 <button class="btn btn-block" style="margin-top: 0; flex: 1; border-color: var(--accent-yellow); color: var(--accent-yellow);" onclick="triggerImportFileInput()">Importar Datos</button>
             </div>
-            <!-- Input de archivo oculto para que no rompa la estética brutalista -->
             <input type="file" id="import-file-input" accept=".json" style="display: none;" onchange="importGymData(event)">
         </div>
     </div>
@@ -1149,17 +1167,156 @@
             }
         }
 
-        // --- HISTORIAL ---
+        // --- HISTORIAL CON CALENDARIO INTERACTIVO ---[span_5](start_span)[span_5](end_span)
+        let currentCalendarDate = new Date(); // Controla qué mes estamos visualizando[span_6](start_span)[span_6](end_span)
+
         function renderHistory() {
-            const container = document.getElementById('history-container');
-            if (history.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 40px 10px;">Historial vacío.</p>';
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+
+            // 1. Actualizar el título de Mes y Año en la cabecera[span_7](start_span)[span_7](end_span)
+            const headerElem = document.getElementById('calendar-month-year');
+            if (headerElem) {
+                headerElem.innerText = `${monthNames[month]} ${year}`;
+            }
+
+            const grid = document.getElementById('calendar-days-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            // 2. Obtener el primer día del mes (ajustado para que empiece en Lunes = 0)[span_8](start_span)[span_8](end_span)
+            let firstDayIndex = new Date(year, month, 1).getDay() - 1;
+            if (firstDayIndex < 0) firstDayIndex = 6; // Si es domingo, se mueve al final[span_9](start_span)[span_9](end_span)
+
+            // 3. Obtener el total de días de este mes[span_10](start_span)[span_10](end_span)
+            const totalDays = new Date(year, month + 1, 0).getDate();
+
+            // 4. Crear los huecos vacíos de los días del mes anterior[span_11](start_span)[span_11](end_span)
+            for (let i = 0; i < firstDayIndex; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.style.aspectRatio = '1';
+                grid.appendChild(emptyCell);
+            }
+
+            // 5. Generar los días del mes actual[span_12](start_span)[span_12](end_span)
+            for (let day = 1; day <= totalDays; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day-btn';
+                dayCell.innerText = day;
+                
+                // Estilos base cyberpunk[span_13](start_span)[span_13](end_span)
+                dayCell.style.aspectRatio = '1';
+                dayCell.style.display = 'flex';
+                dayCell.style.alignItems = 'center';
+                dayCell.style.justifyContent = 'center';
+                dayCell.style.fontSize = '0.9rem';
+                dayCell.style.fontWeight = '700';
+                dayCell.style.cursor = 'pointer';
+                dayCell.style.background = 'var(--bg-input)';
+                dayCell.style.border = '1px solid var(--border-color)';
+                dayCell.style.borderRadius = '4px';
+                dayCell.style.color = 'var(--text-primary)';
+                dayCell.style.transition = 'all 0.15s ease';
+
+                // Filtrar entrenamientos realizados en este día preciso[span_14](start_span)[span_14](end_span)
+                const dayWorkouts = history.filter(session => {
+                    const sessionDate = new Date(session.timestamp);
+                    return sessionDate.getFullYear() === year && 
+                           sessionDate.getMonth() === month && 
+                           sessionDate.getDate() === day;
+                });
+
+                // REGLA DE COLOR: Si hay entrenamientos, se pinta verde de golpe[span_15](start_span)[span_15](end_span)
+                if (dayWorkouts.length > 0) {
+                    dayCell.style.background = 'var(--accent-green)';
+                    dayCell.style.color = 'var(--bg-main)';
+                    dayCell.style.borderColor = 'var(--accent-green)';
+                }
+
+                // Evento al hacer clic en el día[span_16](start_span)[span_16](end_span)
+                dayCell.addEventListener('click', () => {
+                    // Limpiamos los bordes de selección de todos los días del calendario[span_17](start_span)[span_17](end_span)
+                    document.querySelectorAll('.calendar-day-btn').forEach(cell => {
+                        cell.style.boxShadow = 'none';
+                    });
+                    
+                    // Resaltamos el día seleccionado con un borde neón[span_18](start_span)[span_18](end_span)
+                    dayCell.style.boxShadow = '0 0 0 2px var(--text-primary)';
+                    
+                    showDayWorkouts(day, dayWorkouts);
+                });
+
+                grid.appendChild(dayCell);
+            }
+
+            // Mostrar por defecto las sesiones del día de hoy si estamos en el mes actual[span_19](start_span)[span_19](end_span)
+            const today = new Date();
+            if (today.getFullYear() === year && today.getMonth() === month) {
+                const todayWorkouts = history.filter(session => {
+                    const sessionDate = new Date(session.timestamp);
+                    return sessionDate.getFullYear() === year && 
+                           sessionDate.getMonth() === month && 
+                           sessionDate.getDate() === today.getDate();
+                });
+                
+                // Autoseleccionar visualmente el día de hoy[span_20](start_span)[span_20](end_span)
+                setTimeout(() => {
+                    const cells = document.querySelectorAll('.calendar-day-btn');
+                    const todayCell = cells[today.getDate() - 1];
+                    if (todayCell) {
+                        todayCell.style.boxShadow = '0 0 0 2px var(--text-primary)';
+                    }
+                }, 10);
+                
+                showDayWorkouts(today.getDate(), todayWorkouts, true);
+            } else {
+                // Si cambiamos de mes, mostramos un aviso indicando que seleccione un día[span_21](start_span)[span_21](end_span)
+                document.getElementById('calendar-day-details').innerHTML = `
+                    <p style="color: var(--text-secondary); text-align: center; padding: 25px 10px; font-size: 0.85rem; border: 1px dashed var(--border-color); margin-top: 12px;">
+                        Selecciona un día en verde del calendario para ver tus sesiones[span_22](start_span)[span_22](end_span)
+                    </p>
+                `;
+            }
+        }
+
+        // Navegación de meses[span_23](start_span)[span_23](end_span)
+        function changeCalendarMonth(offset) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + offset);
+            renderHistory();
+        }
+
+        // Mostrar listado de entrenamientos del día seleccionado abajo del calendario[span_24](start_span)[span_24](end_span)
+        function showDayWorkouts(day, dayWorkouts, isDefaultToday = false) {
+            const container = document.getElementById('calendar-day-details');
+            if (!container) return;
+
+            if (dayWorkouts.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 25px 10px; border: 1px dashed var(--border-color); background: var(--bg-card); margin-top: 12px;">
+                        <p style="color: var(--text-secondary); font-size: 0.85rem;">No registraste entrenamientos el día ${day}.[span_25](start_span)[span_25](end_span)</p>
+                    </div>
+                `;
                 return;
             }
+
             container.innerHTML = '';
-            history.forEach((workout, hIdx) => {
+            
+            const title = document.createElement('h3');
+            title.style.fontSize = '0.85rem';
+            title.style.textTransform = 'uppercase';
+            title.style.color = 'var(--text-secondary)';
+            title.style.margin = '16px 0 10px 0';
+            title.style.letterSpacing = '0.5px';
+            title.innerText = isDefaultToday ? `Sesiones de Hoy (Día ${day})` : `Sesiones del día ${day}`;
+            container.appendChild(title);
+
+            dayWorkouts.forEach(workout => {
                 const div = document.createElement('div');
                 div.className = 'history-item';
+                div.style.marginTop = '0';
+                div.style.marginBottom = '12px';
+                
                 let exercisesHtml = '';
                 workout.exercises.forEach(ex => {
                     const activeSets = ex.sets.filter(s => s.completed);
@@ -1173,23 +1330,33 @@
                             </div>`;
                     }
                 });
+
+                // Localizamos el índice exacto dentro del array global de historial para poder borrarlo[span_26](start_span)[span_26](end_span)
+                const globalIdx = history.findIndex(h => h.timestamp === workout.timestamp);
+
                 div.innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:4px; margin-bottom: 6px;">
                         <span class="history-date">${workout.date}</span>
-                        <button class="btn" style="border:none; color:var(--accent-red); padding:2px;" onclick="deleteHistoryItem(${hIdx})">Eliminar</button>
+                        ${globalIdx !== -1 ? `<button class="btn" style="border:none; color:var(--accent-red); padding:2px; font-size:0.75rem;" onclick="deleteHistoryItem(${globalIdx})">Eliminar</button>` : ''}
                     </div>
-                    <h4 style="text-transform: uppercase; font-size:1rem;">${workout.routineName || "Personalizada"}</h4>
-                    <div>${exercisesHtml}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                        <h4 style="text-transform: uppercase; font-size:1rem; margin: 0;">${workout.routineName || "Personalizada"}</h4>
+                        <!-- EL BOTÓN: Te lleva directo a iniciar esa plantilla de rutina[span_27](start_span)[span_27](end_span) -->
+                        ${workout.routineName && templates[workout.routineName] ? `
+                            <button class="btn btn-success" style="padding: 4px 10px; font-size: 0.7rem; font-weight: 700;" onclick="startRoutine('${workout.routineName}')">Entrenar</button>
+                        ` : ''}
+                    </div>
+                    <div style="margin-top: 8px;">${exercisesHtml}</div>
                 `;
                 container.appendChild(div);
             });
         }
 
         function deleteHistoryItem(idx) {
-            if (confirm("¿Borrar este entrenamiento?")) {
+            if (confirm("¿Borrar este entrenamiento del historial?")) {
                 history.splice(idx, 1);
                 localStorage.setItem('raw_gym_history', JSON.stringify(history));
-                renderHistory();
+                renderHistory(); // Se refresca automáticamente conservando el mes actual[span_28](start_span)[span_28](end_span)
             }
         }
 
@@ -1421,7 +1588,7 @@
             container.innerHTML = svgHtml;
         }
 
-        // >>> AQUÍ PEGAS LAS NUEVAS FUNCIONES DE BACKUP <<<
+        // --- SISTEMA DE COPIA DE SEGURIDAD (IMPORTAR/EXPORTAR) ---
         function exportGymData() {
             const backupData = {
                 templates: JSON.parse(localStorage.getItem('raw_gym_templates') || '{}'),
@@ -1612,6 +1779,7 @@
             }
         }
 
+        // Pausa o reanuda el tiempo recalculando el objetivo
         function toggleTimerActive() {
             isTimerPaused = !isTimerPaused;
             const btn = document.getElementById('btn-timer-toggle');
