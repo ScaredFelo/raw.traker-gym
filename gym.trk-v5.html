@@ -1819,7 +1819,7 @@
             let disks = getMinDisks(targetPerSide);
             if (!disks) return '<span style="color: var(--accent-red);">⚠️ Err</span>';
             
-            // Mapeo estricto de colores por disco individual usando comas para decimales
+            // Mapeo de colores por disco individual usando comas para decimales
             let coloredDisks = disks.map(d => {
                 let displayVal = d.replace('.', ','); // Cambiamos el punto por coma (ej: 2,5 o 1,25)
                 let color = '#ffffff';
@@ -1842,7 +1842,10 @@
                        `${disksJoined}` +
                        `<span style="color: var(--text-secondary);">)x2</span>`;
             } else {
-                return disksJoined;
+                // MODIFICADO: Ahora encierra la combinación de discos de Multipower/Máquinas entre paréntesis con x2 al final
+                return `<span style="color: var(--text-secondary);">(</span>` +
+                       `${disksJoined}` +
+                       `<span style="color: var(--text-secondary);">)x2</span>`;
             }
         }
 
