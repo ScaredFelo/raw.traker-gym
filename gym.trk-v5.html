@@ -582,12 +582,23 @@
         <button class="btn btn-block" style="margin-top: 8px; background: transparent;" onclick="cancelRoutineEditor()">Cancelar</button>
     </div>
 
-    <!-- ==================== PÁGINA 3: HISTORIAL ==================== -->
+        <!-- ==================== PÁGINA 3: HISTORIAL ==================== -->
     <div id="view-history" class="view">
         <header>
             <h1>Historial</h1>
         </header>
-        <div id="history-container"></div>
+        <div id="history-container" style="margin-bottom: 25px;"></div>
+
+        <!-- PANEL DE COPIA DE SEGURIDAD (IMPORTAR/EXPORTAR) -->
+        <div class="chart-display-area" style="margin-top: 20px; border-style: solid; padding: 14px; background: var(--bg-card);">
+            <h2 style="color: var(--accent-blue); margin-bottom: 12px; font-size: 0.85rem; text-transform: uppercase;">Copia de Seguridad (Cambio de móvil)</h2>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-block" style="margin-top: 0; flex: 1; border-color: var(--accent-blue); color: var(--accent-blue);" onclick="exportGymData()">Exportar Datos</button>
+                <button class="btn btn-block" style="margin-top: 0; flex: 1; border-color: var(--accent-yellow); color: var(--accent-yellow);" onclick="triggerImportFileInput()">Importar Datos</button>
+            </div>
+            <!-- Input de archivo oculto para que no rompa la estética brutalista -->
+            <input type="file" id="import-file-input" accept=".json" style="display: none;" onchange="importGymData(event)">
+        </div>
     </div>
 
     <!-- ==================== PÁGINA 4: GRÁFICOS ==================== -->
