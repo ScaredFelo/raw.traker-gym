@@ -512,7 +512,7 @@
     <!-- MODAL INTERNO PARA ENTRADA DE TEXTO Y SELECCIÓN DE MÚSCULO -->
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-box">
-            <div id="modal-title" class="modal-title">Introduce un valor</div>
+            <div id="modal-title" class="modal-title">Introduce un value</div>
             <input type="text" id="modal-input" placeholder="Escribe aquí...">
             
             <!-- Desplegable para seleccionar grupo muscular -->
@@ -555,12 +555,31 @@
         </div>
     </div>
 
+    <!-- MODAL DE CONFIGURACIÓN DE DISCOS DISPONIBLES -->
+    <div id="config-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">Discos disponibles en el Gym</div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase;">Selecciona los discos que hay en tu gimnasio:</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;" id="config-disks-checkboxes">
+                <!-- Se generarán dinámicamente con JS -->
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-success" style="width: 100%;" onclick="closeConfigModal()">Guardar y Aplicar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ==================== PÁGINA 1: ENTRENAR (CON CRONÓMETRO Y CANCELAR) ==================== -->
     <div id="view-train" class="view active">
         <header style="display: flex; flex-direction: column; align-items: stretch; gap: 8px;">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <h1 id="workout-title">Sin Sesión Activa</h1>
-                <span id="workout-timer-display" style="display: none; font-size: 1rem; font-family: monospace; color: var(--accent-yellow); font-weight: bold; letter-spacing: 0.5px;">⏱️ 00:00</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span id="workout-timer-display" style="display: none; font-size: 1rem; font-family: monospace; color: var(--accent-yellow); font-weight: bold; letter-spacing: 0.5px;">⏱️ 00:00</span>
+                    <button id="btn-config" class="btn" onclick="openConfigModal()" style="padding: 6px 10px; font-size: 1.1rem; line-height: 1;">⚙️</button>
+                </div>
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 10px; width: 100%;">
                 <button id="btn-cancel" class="btn btn-danger" onclick="cancelWorkout()" style="display: none;">Cancelar</button>
@@ -734,7 +753,7 @@
                 { name: 'Press banca inclinado', muscle: 'Pecho', targetReps: '6-8', equipType: 'smith', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
                 { name: 'Seated cable Fly', muscle: 'Pecho', targetReps: '8-10', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
                 { name: 'Jalon al pecho en polea', muscle: 'Espalda', targetReps: '6-8', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Elevaciones laterales', muscle: 'Hombro lateral', targetReps: '8-10', equipType: 'dumbbell', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Elevaciones laterales', muscle: 'Hombro lateral', targetReps: '8-10', equipType: 'dumbbell', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
                 { name: 'Remo smith', muscle: 'Espalda', targetReps: '7-9', equipType: 'smith', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
                 { name: 'Extension de triceps', muscle: 'Triceps', targetReps: '8-10', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
                 { name: 'Biceps en doble/simple polea', muscle: 'Biceps', targetReps: '8-10', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
@@ -752,6 +771,18 @@
         let currentWorkoutName = "";
         let currentWorkout = null; 
         let history = [];
+
+        // CONFIGURACIÓN DE DISCOS DISPONIBLES (INCLUYE EL DE 15 KG)
+        const defaultAvailableDisks = {
+            "25": true,
+            "20": true,
+            "15": true,
+            "10": true,
+            "5": true,
+            "2.5": true,
+            "1.25": true
+        };
+        let availableDisks = JSON.parse(localStorage.getItem('raw_gym_available_disks')) || defaultAvailableDisks;
 
         // VARIABLES DE CONTROL DE SESIÓN
         let workoutStartTime = null;
@@ -806,6 +837,52 @@
 
         function closeCustomModal() {
             document.getElementById('custom-modal').classList.remove('active');
+        }
+
+        // CONTROL DEL MODAL DE CONFIGURACIÓN DE DISCOS
+        function openConfigModal() {
+            const container = document.getElementById('config-disks-checkboxes');
+            container.innerHTML = '';
+            
+            Object.keys(availableDisks).forEach(size => {
+                const label = document.createElement('label');
+                label.style.display = 'flex';
+                label.style.alignItems = 'center';
+                label.style.gap = '12px';
+                label.style.cursor = 'pointer';
+                label.style.padding = '8px';
+                label.style.background = 'var(--bg-input)';
+                label.style.border = '1px solid var(--border-color)';
+                label.style.fontWeight = '600';
+                
+                let dotColor = '#ffffff';
+                if (size === '25') dotColor = 'var(--accent-red)';
+                else if (size === '20') dotColor = 'var(--accent-blue)';
+                else if (size === '15') dotColor = 'var(--accent-yellow)';
+                else if (size === '10') dotColor = 'var(--accent-green)';
+                else if (size === '2.5') dotColor = '#ff9f0a';
+                else if (size === '1.25') dotColor = '#ff375f';
+
+                label.innerHTML = `
+                    <input type="checkbox" value="${size}" ${availableDisks[size] ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--accent-green);">
+                    <span style="display: inline-block; width: 10px; height: 10px; background: ${dotColor}; border-radius: 50%;"></span>
+                    <span>${size.replace('.', ',')} kg</span>
+                `;
+                
+                label.querySelector('input').addEventListener('change', function() {
+                    availableDisks[size] = this.checked;
+                    localStorage.setItem('raw_gym_available_disks', JSON.stringify(availableDisks));
+                });
+
+                container.appendChild(label);
+            });
+
+            document.getElementById('config-modal').classList.add('active');
+        }
+
+        function closeConfigModal() {
+            document.getElementById('config-modal').classList.remove('active');
+            if (currentWorkout) renderWorkout();
         }
 
         function switchView(viewId, buttonElement) {
@@ -1023,6 +1100,7 @@
                 document.getElementById('btn-cancel').style.display = 'none';
                 document.getElementById('workout-timer-display').style.display = 'none';
                 document.getElementById('btn-add-exercise-session').style.display = 'none';
+                document.getElementById('btn-config').style.display = 'block';
                 return;
             }
 
@@ -1038,6 +1116,7 @@
                 document.getElementById('btn-cancel').style.display = 'block';
                 document.getElementById('workout-timer-display').style.display = 'inline-block';
                 document.getElementById('btn-add-exercise-session').style.display = 'block';
+                document.getElementById('btn-config').style.display = 'none';
                 return;
             }
 
@@ -1046,6 +1125,7 @@
             document.getElementById('btn-cancel').style.display = 'block';
             document.getElementById('workout-timer-display').style.display = 'inline-block';
             document.getElementById('btn-add-exercise-session').style.display = 'block';
+            document.getElementById('btn-config').style.display = 'none';
 
             currentWorkout.forEach((exercise, exIndex) => {
                 const card = document.createElement('div');
@@ -1064,7 +1144,6 @@
                             <td style="font-size:0.8rem; color:var(--text-secondary);">${set.prev || '-'}</td>
                             <td>
                                 <input type="number" step="0.25" value="${set.weight}" oninput="updateSetWeightRealtime(${exIndex}, ${setIndex}, this.value)" onchange="updateSetData(${exIndex}, ${setIndex}, 'weight', this.value)">
-                                <!-- CONTENEDOR SIN COLOR FORZADO PARA PERMITIR INLINE SPANS -->
                                 <div id="helper-${exIndex}-${setIndex}" style="font-size: 0.65rem; margin-top: 4px; font-weight: 800; font-family: monospace;">
                                     ${calculateWeightHelper(set.weight, exercise.equipType)}
                                 </div>
@@ -1105,7 +1184,6 @@
             saveState();
         }
 
-        // CAMBIADO A innerHTML PARA SOPORTAR LOS COLORES DINÁMICOS EN TIEMPO REAL
         function updateSetWeightRealtime(exIndex, setIndex, value) {
             let val = parseFloat(value) || 0;
             currentWorkout[exIndex].sets[setIndex].weight = val;
@@ -1762,23 +1840,32 @@
             }
         }
 
-        // --- ALGORITMO OPTIMIZADO DE DISTRIBUCIÓN DE DISCOS (DYNAMICS) ---
+        // --- ALGORITMO OPTIMIZADO DE DISTRIBUCIÓN DE DISCOS FILTRADO ---
         function getMinDisks(target) {
             let t = Math.round(target * 100);
             if (t < 0 || t % 125 !== 0) return null; 
             
-            const disks = [2500, 2000, 1000, 500, 250, 125];
-            const diskValues = {2500: "25", 2000: "20", 1000: "10", 500: "5", 250: "2.5", 125: "1.25"};
+            const allDisks = [
+                { val: 2500, str: "25" },
+                { val: 2000, str: "20" },
+                { val: 1500, str: "15" },
+                { val: 1000, str: "10" },
+                { val: 500,  str: "5" },
+                { val: 250,  str: "2.5" },
+                { val: 125,  str: "1.25" }
+            ];
+
+            const activeDisks = allDisks.filter(d => availableDisks[d.str]);
             
             let dp = new Array(t + 1).fill(Infinity);
             let parent = new Array(t + 1).fill(-1);
             dp[0] = 0;
             
             for (let i = 125; i <= t; i += 125) {
-                for (let d of disks) {
-                    if (i >= d && dp[i - d] + 1 < dp[i]) {
-                        dp[i] = dp[i - d] + 1;
-                        parent[i] = d;
+                for (let d of activeDisks) {
+                    if (i >= d.val && dp[i - d.val] + 1 < dp[i]) {
+                        dp[i] = dp[i - d.val] + 1;
+                        parent[i] = d.val;
                     }
                 }
             }
@@ -1787,6 +1874,7 @@
             
             let result = [];
             let curr = t;
+            const diskValues = {2500: "25", 2000: "20", 1500: "15", 1000: "10", 500: "5", 250: "2.5", 125: "1.25"};
             while (curr > 0) {
                 let d = parent[curr];
                 result.push(diskValues[d]);
@@ -1795,7 +1883,6 @@
             return result.sort((a,b) => parseFloat(b) - parseFloat(a));
         }
 
-        // REESCRITO CON PARSEO CROMÁTICO AVANZADO PARA CADA TIPO DE DISCO SEGN EL ESTÁNDAR COMPRENSIVO
         function getDisksCombination(totalWeight, baseWeight) {
             let netWeight = totalWeight - baseWeight;
             if (netWeight < 0) return '<span style="color: var(--accent-red);">⚠️ &lt; bar</span>';
@@ -1808,7 +1895,6 @@
                 return '<span style="color: var(--accent-red);">⚠️ Peso</span>';
             }
             
-            // Si no hay discos adicionales (solo la barra)
             if (targetPerSide === 0) {
                 if (baseWeight > 0) {
                     return `<span style="color: #ffd700; font-weight: 800; text-transform: uppercase;">Barra(${baseWeight})</span>`;
@@ -1817,24 +1903,23 @@
             }
             
             let disks = getMinDisks(targetPerSide);
-            if (!disks) return '<span style="color: var(--accent-red);">⚠️ Err</span>';
+            if (!disks) return '<span style="color: var(--accent-red);">⚠️ Sin comb.</span>';
             
-            // Mapeo de colores por disco individual usando comas para decimales
             let coloredDisks = disks.map(d => {
-                let displayVal = d.replace('.', ','); // Cambiamos el punto por coma (ej: 2,5 o 1,25)
+                let displayVal = d.replace('.', ','); 
                 let color = '#ffffff';
-                if (d === '25') color = 'var(--accent-red)';      // Rojo
-                else if (d === '20') color = 'var(--accent-blue)';     // Azul
-                else if (d === '10') color = 'var(--accent-green)';    // Verde
-                else if (d === '5') color = '#ffffff';                 // Blanco
-                else if (d === '2.5') color = '#ff9f0a';               // Naranja (iOS Dark System)
-                else if (d === '1.25') color = '#ff375f';              // Rosa (iOS Dark System)
+                if (d === '25') color = 'var(--accent-red)';      
+                else if (d === '20') color = 'var(--accent-blue)';     
+                else if (d === '15') color = 'var(--accent-yellow)';   
+                else if (d === '10') color = 'var(--accent-green)';    
+                else if (d === '5') color = '#ffffff';                 
+                else if (d === '2.5') color = '#ff9f0a';               
+                else if (d === '1.25') color = '#ff375f';              
                 return `<span style="color: ${color};">${displayVal}</span>`;
             });
             
             let disksJoined = coloredDisks.join('<span style="color: var(--text-secondary); margin: 0 2px;">+</span>');
             
-            // Si usamos una barra base con peso, mostramos el formato Barra(Peso)+(Discos)x2 con Barra en dorado
             if (baseWeight > 0) {
                 return `<span style="color: #ffd700; font-weight: 800;">Barra(${baseWeight})</span>` +
                        `<span style="color: var(--text-secondary); margin: 0 2px;">+</span>` +
@@ -1842,14 +1927,12 @@
                        `${disksJoined}` +
                        `<span style="color: var(--text-secondary);">)x2</span>`;
             } else {
-                // MODIFICADO: Ahora encierra la combinación de discos de Multipower/Máquinas entre paréntesis con x2 al final
                 return `<span style="color: var(--text-secondary);">(</span>` +
                        `${disksJoined}` +
                        `<span style="color: var(--text-secondary);">)x2</span>`;
             }
         }
 
-        // PARSEO DE SECCIONES FIJAS (MANCUERNAS, CABLES, FIJAS) CON COLOR AMARILLO SISTÉMICO PARA LOS NÚMEROS
         function calculateWeightHelper(weight, equipType) {
             if (!weight || weight <= 0) return '';
             
