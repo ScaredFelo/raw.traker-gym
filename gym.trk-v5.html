@@ -219,7 +219,7 @@
             background: rgba(48, 209, 88, 0.05);
         }
 
-        input[type="number"], input[type="text"] {
+        input[type="number"], input[type="text"], input[type="password"] {
             width: 100%;
             background: var(--bg-input);
             border: 1px solid var(--border-color);
@@ -364,6 +364,8 @@
             padding: 20px;
             width: 100%;
             max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-title {
@@ -512,7 +514,7 @@
     <!-- MODAL INTERNO PARA ENTRADA DE TEXTO Y SELECCIÓN DE MÚSCULO -->
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-box">
-            <div id="modal-title" class="modal-title">Introduce un valor</div>
+            <div id="modal-title" class="modal-title">Introduce un value</div>
             <input type="text" id="modal-input" placeholder="Escribe aquí...">
             
             <!-- Desplegable para seleccionar grupo muscular -->
@@ -555,7 +557,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIGURACIÓN DE DISCOS DISPONIBLES -->
+    <!-- MODAL DE CONFIGURACIÓN DE DISCOS Y BUZÓN GITHUB -->
     <div id="config-modal" class="modal-overlay">
         <div class="modal-box">
             <div class="modal-title">Discos disponibles en el Gym</div>
@@ -563,6 +565,27 @@
             
             <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;" id="config-disks-checkboxes">
                 <!-- Se generarán dinámicamente con JS -->
+            </div>
+
+            <!-- SECCIÓN NUEVA: INTEGRACIÓN BUZÓN ASÍNCRONO DE GITHUB -->
+            <div style="border-top: 1px solid var(--border-color); margin-top: 20px; padding-top: 16px;">
+                <div class="modal-title" style="color: var(--accent-blue); margin-bottom: 4px;">📬 Buzón Asíncrono (GitHub)</div>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase;">Para el análisis diferido con la IA:</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div>
+                        <label style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 4px;">Usuario GitHub</label>
+                        <input type="text" id="gh-user" placeholder="ej: tu_usuario" style="font-size: 0.9rem;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 4px;">Repositorio (Privado)</label>
+                        <input type="text" id="gh-repo" placeholder="ej: mi-tracker-mailbox" style="font-size: 0.9rem;">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 4px;">Personal Access Token (PAT)</label>
+                        <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="font-size: 0.9rem;">
+                    </div>
+                </div>
             </div>
 
             <div class="modal-buttons">
@@ -839,7 +862,7 @@
             document.getElementById('custom-modal').classList.remove('active');
         }
 
-        // CONTROL DEL MODAL DE CONFIGURACIÓN DE DISCOS
+        // CONTROL DEL MODAL DE CONFIGURACIÓN DE DISCOS Y CREDENCIALES GITHUB
         function openConfigModal() {
             const container = document.getElementById('config-disks-checkboxes');
             container.innerHTML = '';
@@ -877,10 +900,20 @@
                 container.appendChild(label);
             });
 
+            // Cargar datos del Buzón desde localStorage al abrir
+            document.getElementById('gh-user').value = localStorage.getItem('raw_gym_gh_user') || '';
+            document.getElementById('gh-repo').value = localStorage.getItem('raw_gym_gh_repo') || '';
+            document.getElementById('gh-token').value = localStorage.getItem('raw_gym_gh_token') || '';
+
             document.getElementById('config-modal').classList.add('active');
         }
 
         function closeConfigModal() {
+            // Guardar inputs del Buzón en localStorage al cerrar
+            localStorage.setItem('raw_gym_gh_user', document.getElementById('gh-user').value.trim());
+            localStorage.setItem('raw_gym_gh_repo', document.getElementById('gh-repo').value.trim());
+            localStorage.setItem('raw_gym_gh_token', document.getElementById('gh-token').value.trim());
+
             document.getElementById('config-modal').classList.remove('active');
             if (currentWorkout) renderWorkout();
         }
@@ -1280,6 +1313,53 @@
             }
         }
 
+        // --- MOTOR DEL BUZÓN ASÍNCRONO DE GITHUB ---
+        async function sendToGitHubMailbox(workoutData) {
+            const user = localStorage.getItem('raw_gym_gh_user');
+            const repo = localStorage.getItem('raw_gym_gh_repo');
+            const token = localStorage.getItem('raw_gym_gh_token');
+
+            // Si faltan datos de configuración, se aborta el envío silenciosamente manteniendo el espíritu utilitario
+            if (!user || !repo || !token) {
+                console.log("Buzón de GitHub no configurado por completo. Datos respaldados únicamente de manera local.");
+                return;
+            }
+
+            const timestamp = workoutData.timestamp || Date.now();
+            const filename = `workout_${timestamp}.json`;
+            const url = `https://api.github.com/repos/${user}/${repo}/contents/mailbox/${filename}`;
+
+            try {
+                const jsonString = JSON.stringify(workoutData, null, 2);
+                // Codificación Base64 robusta compatible con caracteres especiales y acentos
+                const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+
+                const payload = {
+                    message: `⚡ entreno auto-sync: ${workoutData.date || new Date().toISOString().split('T')[0]}`,
+                    content: base64Content
+                };
+
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    console.log(`✅ Entrenamiento volcado con éxito al buzón: mailbox/${filename}`);
+                } else {
+                    const errorData = await response.json();
+                    console.error("❌ Error de comunicación con la API de GitHub:", errorData.message);
+                }
+            } catch (error) {
+                console.error("🚨 Error crítico de red al conectar con GitHub Mailbox:", error);
+            }
+        }
+
         function finishWorkout() {
             if(confirm("¿Guardar entrenamiento?")) {
                 const now = new Date();
@@ -1307,6 +1387,9 @@
                 };
                 history.unshift(completedWorkout);
                 localStorage.setItem('raw_gym_history', JSON.stringify(history));
+
+                // LLAMADA AL BUZÓN ASÍNCRONO: Se ejecuta de fondo sin bloquear al usuario
+                sendToGitHubMailbox(completedWorkout);
 
                 const workoutToSaveAsTemplate = JSON.parse(JSON.stringify(currentWorkout));
                 const oldWorkoutName = currentWorkoutName;
