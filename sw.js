@@ -1,4 +1,4 @@
-const CACHE_NAME = 'raw-tracker-v33';
+const CACHE_NAME = 'raw-tracker-v34';
 // Lista de archivos que queremos que se guarden en el móvil para usar offline
 const ASSETS = [
   './gym.trk-v5.html',
