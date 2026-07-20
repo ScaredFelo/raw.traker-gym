@@ -617,28 +617,40 @@
 
     <div id="config-modal" class="modal-overlay">
         <div class="modal-box">
-            <div class="modal-title">Discos disponibles en el Gym</div>
-            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase;">Selecciona los discos que hay en tu gimnasio:</p>
+            <div class="modal-title" style="margin-bottom: 16px;">⚙️ Configuración</div>
             
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;" id="config-disks-checkboxes">
+            <div class="accordion-item" style="margin-bottom: 12px; border: 1px solid var(--border-color); background: var(--bg-input);">
+                <div id="acc-disks-header" class="accordion-header" onclick="toggleConfigAccordion('disks')" style="padding: 12px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+                    <span>🏋️ Discos Disponibles</span>
+                    <span id="acc-disks-arrow">▶</span>
                 </div>
+                <div id="acc-disks-body" class="accordion-body" style="display: none; padding: 12px; border-top: 1px solid var(--border-color); background: var(--bg-card);">
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase;">Selecciona los discos disponibles (de menor a mayor peso):</p>
+                    <div style="display: flex; flex-direction: column; gap: 8px;" id="config-disks-checkboxes">
+                        </div>
+                </div>
+            </div>
 
-            <div style="border-top: 1px solid var(--border-color); margin-top: 20px; padding-top: 16px;">
-                <div class="modal-title" style="color: var(--accent-blue); margin-bottom: 4px;">📬 Buzón Asíncrono (GitHub)</div>
-                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase;">Para el análisis diferido con la IA:</p>
-                
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <div>
-                        <label style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 4px;">Usuario GitHub</label>
-                        <input type="text" id="gh-user" placeholder="ej: tu_usuario" style="font-size: 0.9rem;">
-                    </div>
-                    <div>
-                        <label style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 4px;">Repositorio (Privado)</label>
-                        <input type="text" id="gh-repo" placeholder="ej: mi-tracker-mailbox" style="font-size: 0.9rem;">
-                    </div>
-                    <div>
-                        <label style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 4px;">Personal Access Token (PAT)</label>
-                        <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="font-size: 0.9rem;">
+            <div class="accordion-item" style="margin-bottom: 16px; border: 1px solid var(--border-color); background: var(--bg-input);">
+                <div id="acc-github-header" class="accordion-header" onclick="toggleConfigAccordion('github')" style="padding: 12px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+                    <span style="color: var(--accent-blue);">📬 Buzón Asíncrono (GitHub)</span>
+                    <span id="acc-github-arrow">▶</span>
+                </div>
+                <div id="acc-github-body" class="accordion-body" style="display: none; padding: 12px; border-top: 1px solid var(--border-color); background: var(--bg-card);">
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase;">Para el análisis diferido con la IA:</p>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div>
+                            <label style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 4px;">Usuario GitHub</label>
+                            <input type="text" id="gh-user" placeholder="ej: tu_usuario" style="font-size: 0.9rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 4px;">Repositorio (Privado)</label>
+                            <input type="text" id="gh-repo" placeholder="ej: mi-tracker-mailbox" style="font-size: 0.9rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 4px;">Personal Access Token (PAT)</label>
+                            <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="font-size: 0.9rem;">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -788,7 +800,7 @@
     </nav>
 
     <script>
-        // --- PLANTILLAS ACTUALIZADAS CON TU RUTINA PPL/UL, CLASIFICACIÓN MUSCULAR Y TIEMPOS DE DESCANSO ---
+        ////----------------INICIALIZACIÓN Y VARIABLES GLOBALES-------------
         // Push, Pull y Upper -> 2 min 15 seg (135s)
         // Legs y Lower -> 3 min (180s)
         const defaultTemplates = {
@@ -838,7 +850,6 @@
         let currentWorkout = null; 
         let history = [];
 
-        // CONFIGURACIÓN DE DISCOS DISPONIBLES (INCLUYE EL DE 15 KG)
         const defaultAvailableDisks = {
             "25": true,
             "20": true,
@@ -850,7 +861,6 @@
         };
         let availableDisks = JSON.parse(localStorage.getItem('raw_gym_available_disks')) || defaultAvailableDisks;
 
-        // VARIABLES DE CONTROL DE SESIÓN
         let workoutStartTime = null;
         let workoutTimerInterval = null;
         let isWorkoutModified = false; 
@@ -858,6 +868,7 @@
         let editingRoutineKey = null;
         let editingRoutineData = null;
 
+        //<-----formatresttime: convierte segundos a texto legible estilo 2m 15s----------
         function formatRestTime(secs) {
             if (!secs || secs <= 0) secs = 120;
             const m = Math.floor(secs / 60);
@@ -865,6 +876,126 @@
             return s > 0 ? `${m}m ${s}s` : `${m}m`;
         }
 
+        ////----------------CONFIGURACIÓN DE DISCOS Y GITHUB-------------
+
+        //<-----toggleconfigaccordion: controla el comportamiento de acordeón estricto (opcion B)----------
+        function toggleConfigAccordion(section) {
+            const disksBody = document.getElementById('acc-disks-body');
+            const disksArrow = document.getElementById('acc-disks-arrow');
+            const githubBody = document.getElementById('acc-github-body');
+            const githubArrow = document.getElementById('acc-github-arrow');
+
+            if (section === 'disks') {
+                const isDisksOpen = disksBody.style.display === 'block';
+                if (isDisksOpen) {
+                    disksBody.style.display = 'none';
+                    disksArrow.innerText = '▶';
+                } else {
+                    disksBody.style.display = 'block';
+                    disksArrow.innerText = '▼';
+                    githubBody.style.display = 'none';
+                    githubArrow.innerText = '▶';
+                }
+            } else if (section === 'github') {
+                const isGithubOpen = githubBody.style.display === 'block';
+                if (isGithubOpen) {
+                    githubBody.style.display = 'none';
+                    githubArrow.innerText = '▶';
+                } else {
+                    githubBody.style.display = 'block';
+                    githubArrow.innerText = '▼';
+                    disksBody.style.display = 'none';
+                    disksArrow.innerText = '▶';
+                }
+            }
+        }
+
+        //<-----openconfigmodal: abre la ventana de ajustes con los acordeones cerrados por defecto----------
+        function openConfigModal() {
+            // Cierre inicial de ambos acordeones por defecto
+            document.getElementById('acc-disks-body').style.display = 'none';
+            document.getElementById('acc-disks-arrow').innerText = '▶';
+            document.getElementById('acc-github-body').style.display = 'none';
+            document.getElementById('acc-github-arrow').innerText = '▶';
+
+            const container = document.getElementById('config-disks-checkboxes');
+            container.innerHTML = '';
+            
+            // Discos ordenados de menor a mayor peso
+            const orderedDiskSizes = ["1.25", "2.5", "5", "10", "15", "20", "25"];
+
+            orderedDiskSizes.forEach(size => {
+                const label = document.createElement('label');
+                label.style.display = 'flex';
+                label.style.alignItems = 'center';
+                label.style.gap = '12px';
+                label.style.cursor = 'pointer';
+                label.style.padding = '8px';
+                label.style.background = 'var(--bg-input)';
+                label.style.border = '1px solid var(--border-color)';
+                label.style.fontWeight = '600';
+                
+                let dotColor = '#ffffff';
+                if (size === '1.25') dotColor = '#bf5af2';      // Morado
+                else if (size === '2.5') dotColor = '#ffd60a';  // Dorado
+                else if (size === '5') dotColor = '#ffffff';    // Blanco
+                else if (size === '10') dotColor = 'var(--accent-green)'; // Verde
+                else if (size === '15') dotColor = 'var(--accent-yellow)'; // Amarillo
+                else if (size === '20') dotColor = 'var(--accent-blue)';   // Azul
+                else if (size === '25') dotColor = 'var(--accent-red)';    // Rojo
+
+                label.innerHTML = `
+                    <input type="checkbox" value="${size}" ${availableDisks[size] ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--accent-green);">
+                    <span style="display: inline-block; width: 10px; height: 10px; background: ${dotColor}; border-radius: 50%;"></span>
+                    <span>${size.replace('.', ',')} kg</span>
+                `;
+                
+                label.querySelector('input').addEventListener('change', function() {
+                    availableDisks[size] = this.checked;
+                    localStorage.setItem('raw_gym_available_disks', JSON.stringify(availableDisks));
+                });
+
+                container.appendChild(label);
+            });
+
+            document.getElementById('gh-user').value = localStorage.getItem('raw_gym_gh_user') || '';
+            document.getElementById('gh-repo').value = localStorage.getItem('raw_gym_gh_repo') || '';
+            document.getElementById('gh-token').value = localStorage.getItem('raw_gym_gh_token') || '';
+
+            document.getElementById('config-modal').classList.add('active');
+        }
+
+        //<-----closeconfigmodal: guarda los datos del buzón de github y cierra el modal----------
+        function closeConfigModal() {
+            localStorage.setItem('raw_gym_gh_user', document.getElementById('gh-user').value.trim());
+            localStorage.setItem('raw_gym_gh_repo', document.getElementById('gh-repo').value.trim());
+            localStorage.setItem('raw_gym_gh_token', document.getElementById('gh-token').value.trim());
+
+            document.getElementById('config-modal').classList.remove('active');
+            if (currentWorkout) renderWorkout();
+        }
+
+        ////----------------MODALES Y NAVEGACIÓN GENERAL-------------
+
+        //<-----switchview: cambia entre las pestañas principales de la app----------
+        function switchView(viewId, buttonElement) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(`view-${viewId}`).classList.add('active');
+
+            if (buttonElement) {
+                document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+                buttonElement.classList.add('active');
+            }
+
+            if (viewId === 'history') renderHistory();
+            if (viewId === 'routines') renderRoutines();
+            if (viewId === 'charts') {
+                renderChartsExerciseList();
+                renderWeeklyMuscleVolume();
+            }
+        }
+
+        //<-----opencustommodal: abre el modal multiusos para entrada de datos----------
         function openCustomModal(title, placeholder, onConfirm, showMuscleSelect = false, showEquipSelect = false, showTargetReps = false, showRestTimer = false) {
             document.getElementById('modal-title').innerText = title;
             const input = document.getElementById('modal-input');
@@ -884,17 +1015,8 @@
             const equipContainer = document.getElementById('modal-equip-container');
             const equipSelect = document.getElementById('modal-equip-select');
             
-            if (showTargetReps) {
-                repsContainer.style.display = 'block';
-            } else {
-                repsContainer.style.display = 'none';
-            }
-
-            if (showRestTimer) {
-                restContainer.style.display = 'block';
-            } else {
-                restContainer.style.display = 'none';
-            }
+            repsContainer.style.display = showTargetReps ? 'block' : 'none';
+            restContainer.style.display = showRestTimer ? 'block' : 'none';
 
             if (showMuscleSelect) {
                 muscleContainer.style.display = 'block';
@@ -931,14 +1053,15 @@
             };
         }
 
+        //<-----closecustommodal: cierra el modal multiusos----------
         function closeCustomModal() {
             document.getElementById('custom-modal').classList.remove('active');
         }
 
-        // GESTIÓN DEL MODAL DE SELECCIÓN RÁPIDA DE TIEMPO DE DESCANSO
-        let currentRestTargetType = null; // 'workout' o 'editor'
+        let currentRestTargetType = null; 
         let currentRestTargetIndex = null;
 
+        //<-----openchangeresttimermodal: abre el selector de descanso en la sesión activa----------
         function openChangeRestTimerModal(exIndex) {
             currentRestTargetType = 'workout';
             currentRestTargetIndex = exIndex;
@@ -948,6 +1071,7 @@
             document.getElementById('rest-picker-modal').classList.add('active');
         }
 
+        //<-----openchangeeditorresttimermodal: abre el selector de descanso en el editor----------
         function openChangeEditorRestTimerModal(idx) {
             currentRestTargetType = 'editor';
             currentRestTargetIndex = idx;
@@ -957,10 +1081,12 @@
             document.getElementById('rest-picker-modal').classList.add('active');
         }
 
+        //<-----closerestpickermodal: cierra el selector de descanso estilo Strong----------
         function closeRestPickerModal() {
             document.getElementById('rest-picker-modal').classList.remove('active');
         }
 
+        //<-----setresttimervalue: aplica el tiempo de descanso al ejercicio seleccionado----------
         function setRestTimerValue(seconds) {
             if (currentRestTargetType === 'workout' && currentRestTargetIndex !== null) {
                 currentWorkout[currentRestTargetIndex].restTimer = seconds;
@@ -975,10 +1101,12 @@
             closeRestPickerModal();
         }
 
+        //<-----selectpresetrest: selecciona un preset de tiempo de descanso rápido----------
         function selectPresetRest(seconds) {
             setRestTimerValue(seconds);
         }
 
+        //<-----applycustomrestinput: aplica el tiempo introducido manualmente en segundos----------
         function applyCustomRestInput() {
             const val = parseInt(document.getElementById('custom-rest-seconds-input').value);
             if (!isNaN(val) && val > 0) {
@@ -986,78 +1114,9 @@
             }
         }
 
-        // CONTROL DEL MODAL DE CONFIGURACIÓN DE DISCOS Y CREDENCIALES GITHUB
-        function openConfigModal() {
-            const container = document.getElementById('config-disks-checkboxes');
-            container.innerHTML = '';
-            
-            Object.keys(availableDisks).forEach(size => {
-                const label = document.createElement('label');
-                label.style.display = 'flex';
-                label.style.alignItems = 'center';
-                label.style.gap = '12px';
-                label.style.cursor = 'pointer';
-                label.style.padding = '8px';
-                label.style.background = 'var(--bg-input)';
-                label.style.border = '1px solid var(--border-color)';
-                label.style.fontWeight = '600';
-                
-                let dotColor = '#ffffff';
-                if (size === '25') dotColor = 'var(--accent-red)';
-                else if (size === '20') dotColor = 'var(--accent-blue)';
-                else if (size === '15') dotColor = 'var(--accent-yellow)';
-                else if (size === '10') dotColor = 'var(--accent-green)';
-                else if (size === '2.5') dotColor = '#ff9f0a';
-                else if (size === '1.25') dotColor = '#ff375f';
+        ////----------------GESTIÓN DE RUTINAS Y PLANTILLAS-------------
 
-                label.innerHTML = `
-                    <input type="checkbox" value="${size}" ${availableDisks[size] ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--accent-green);">
-                    <span style="display: inline-block; width: 10px; height: 10px; background: ${dotColor}; border-radius: 50%;"></span>
-                    <span>${size.replace('.', ',')} kg</span>
-                `;
-                
-                label.querySelector('input').addEventListener('change', function() {
-                    availableDisks[size] = this.checked;
-                    localStorage.setItem('raw_gym_available_disks', JSON.stringify(availableDisks));
-                });
-
-                container.appendChild(label);
-            });
-
-            document.getElementById('gh-user').value = localStorage.getItem('raw_gym_gh_user') || '';
-            document.getElementById('gh-repo').value = localStorage.getItem('raw_gym_gh_repo') || '';
-            document.getElementById('gh-token').value = localStorage.getItem('raw_gym_gh_token') || '';
-
-            document.getElementById('config-modal').classList.add('active');
-        }
-
-        function closeConfigModal() {
-            localStorage.setItem('raw_gym_gh_user', document.getElementById('gh-user').value.trim());
-            localStorage.setItem('raw_gym_gh_repo', document.getElementById('gh-repo').value.trim());
-            localStorage.setItem('raw_gym_gh_token', document.getElementById('gh-token').value.trim());
-
-            document.getElementById('config-modal').classList.remove('active');
-            if (currentWorkout) renderWorkout();
-        }
-
-        function switchView(viewId, buttonElement) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(`view-${viewId}`).classList.add('active');
-
-            if (buttonElement) {
-                document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-                buttonElement.classList.add('active');
-            }
-
-            if (viewId === 'history') renderHistory();
-            if (viewId === 'routines') renderRoutines();
-            if (viewId === 'charts') {
-                renderChartsExerciseList();
-                renderWeeklyMuscleVolume();
-            }
-        }
-
-        // --- GESTIÓN DE RUTINAS ---
+        //<-----renderroutines: dibuja las tarjetas de plantillas en la pestaña Rutinas----------
         function renderRoutines() {
             const list = document.getElementById('routines-list');
             list.innerHTML = '';
@@ -1093,6 +1152,7 @@
             });
         }
 
+        //<-----opencreateroutinemodal: pide el nombre de la nueva rutina a crear----------
         function openCreateRoutineModal() {
             openCustomModal("Nombre de la nueva rutina", "Ej: Tirón, Pierna...", function(name) {
                 if (templates[name]) return;
@@ -1103,6 +1163,7 @@
             });
         }
 
+        //<-----openroutineeditor: abre la vista de edición para modificar una plantilla----------
         function openRoutineEditor(key) {
             editingRoutineKey = key;
             editingRoutineData = JSON.parse(JSON.stringify(templates[key]));
@@ -1120,6 +1181,7 @@
             switchView('edit-routine');
         }
 
+        //<-----rendereditorexercises: dibuja los ejercicios que componen la plantilla en edición----------
         function renderEditorExercises() {
             const container = document.getElementById('edit-routine-exercises');
             container.innerHTML = '';
@@ -1144,6 +1206,7 @@
             });
         }
 
+        //<-----openaddexercicetotemplatemodal: abre el formulario para añadir ejercicio a la plantilla----------
         function openAddExerciceToTemplateModal() {
             openCustomModal("Nombre del ejercicio", "Ej: Dominadas, Press...", function(name, muscle, equip, targetReps, restTimer) {
                 editingRoutineData.push({
@@ -1159,11 +1222,13 @@
             }, true, true, true, true);
         }
 
+        //<-----removeexercisefromeditor: elimina un ejercicio de la lista en edición----------
         function removeExerciseFromEditor(idx) {
             editingRoutineData.splice(idx, 1);
             renderEditorExercises();
         }
 
+        //<-----saveroutineeditor: guarda la plantilla editada en localStorage----------
         function saveRoutineEditor() {
             const newName = document.getElementById('edit-routine-name-input').value.trim();
             if (!newName) return;
@@ -1173,9 +1238,12 @@
             switchView('routines');
         }
 
+        //<-----cancelroutineeditor: descarta los cambios del editor de plantillas----------
         function cancelRoutineEditor() { switchView('routines'); }
 
-        // --- ENTRENAMIENTO ACTIVO ---
+        ////----------------ENTRENAMIENTO ACTIVO Y SESIÓN-------------
+
+        //<-----startroutine: arranca un entrenamiento activo usando una plantilla----------
         function startRoutine(key) {
             if (currentWorkout && !confirm("¿Cambiar de rutina? Se perderá el progreso actual.")) return;
             currentWorkoutName = key;
@@ -1214,6 +1282,7 @@
             switchView('train', document.querySelectorAll('.nav-item')[0]);
         }
 
+        //<-----startemptyworkout: inicia una sesión en blanco para entrenar libremente----------
         function startEmptyWorkout() {
             if (currentWorkout && !confirm("¿Cambiar de rutina? Se perderá el progreso actual.")) return;
             currentWorkoutName = "Personalizada";
@@ -1235,6 +1304,7 @@
             switchView('train', document.querySelectorAll('.nav-item')[0]);
         }
 
+        //<-----findlastcompletedexercisedata: busca el último peso y reps registrados para ese ejercicio----------
         function findLastCompletedExerciseData(exerciseName) {
             for (let session of history) {
                 const found = session.exercises.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
@@ -1243,6 +1313,7 @@
             return null;
         }
 
+        //<-----renderworkout: dibuja las tarjetas de ejercicios de la sesión activa----------
         function renderWorkout() {
             const container = document.getElementById('workout-container');
             container.innerHTML = '';
@@ -1348,12 +1419,13 @@
             });
         }
 
-        // --- ACTUALIZACIONES DE EJERCICIO ACTIVO ---
+        //<-----updatesetdata: actualiza los valores de una serie en memoria----------
         function updateSetData(exIndex, setIndex, field, value) {
             currentWorkout[exIndex].sets[setIndex][field] = parseFloat(value) || 0;
             saveState();
         }
 
+        //<-----updatesetweightrealtime: recalcula el desglose de discos al escribir el peso----------
         function updateSetWeightRealtime(exIndex, setIndex, value) {
             let val = parseFloat(value) || 0;
             currentWorkout[exIndex].sets[setIndex].weight = val;
@@ -1365,6 +1437,7 @@
             }
         }
 
+        //<-----updateexercisenote: guarda notas específicas del ejercicio----------
         function updateExerciseNote(exIndex, text) {
             currentWorkout[exIndex].note = text;
             if (currentWorkoutName && templates[currentWorkoutName]) {
@@ -1378,6 +1451,7 @@
             saveState();
         }
 
+        //<-----cyclesettype: rota entre los tipos de serie: N, C, F, D----------
         function cycleSetType(exIndex, setIndex) {
             const set = currentWorkout[exIndex].sets[setIndex];
             const states = ['N', 'C', 'F', 'D'];
@@ -1387,6 +1461,7 @@
             renderWorkout();
         }
 
+        //<-----togglesetcomplete: marca la serie y activa el temporizador de descanso exacto----------
         function toggleSetComplete(exIndex, setIndex) {
             unlockAudio();
             const set = currentWorkout[exIndex].sets[setIndex];
@@ -1400,6 +1475,7 @@
             renderWorkout();
         }
 
+        //<-----addset: añade una serie vacía duplicando los datos de la anterior----------
         function addSet(exIndex) {
             const sets = currentWorkout[exIndex].sets;
             const lastSet = sets[sets.length - 1] || { weight: 0, reps: 0, type: 'N' };
@@ -1416,6 +1492,7 @@
             renderWorkout();
         }
 
+        //<-----deleteset: elimina una serie del ejercicio----------
         function deleteSet(exIndex, setIndex) {
             if (confirm(`¿Eliminar la serie ${setIndex + 1}?`)) {
                 currentWorkout[exIndex].sets.splice(setIndex, 1);
@@ -1426,6 +1503,7 @@
             }
         }
         
+        //<-----openaddexercisesessionmodal: añade un nuevo ejercicio a la sesión en vivo----------
         function openAddExerciseSessionModal() {
             openCustomModal("Añadir ejercicio a la sesión", "Ej: Curl de bíceps...", function(name, muscle, equip, targetReps, restTimer) {
                 currentWorkout.push({
@@ -1444,6 +1522,7 @@
             }, true, true, true, true);
         }
 
+        //<-----deleteexercise: elimina un ejercicio entero de la sesión activa----------
         function deleteExercise(exIndex) {
             if(confirm("¿Eliminar ejercicio?")) {
                 currentWorkout.splice(exIndex, 1);
@@ -1454,51 +1533,26 @@
             }
         }
 
-        // --- MOTOR DEL BUZÓN ASÍNCRONO DE GITHUB ---
-        async function sendToGitHubMailbox(workoutData) {
-            const user = localStorage.getItem('raw_gym_gh_user');
-            const repo = localStorage.getItem('raw_gym_gh_repo');
-            const token = localStorage.getItem('raw_gym_gh_token');
-
-            if (!user || !repo || !token) {
-                console.log("Buzón de GitHub no configurado por completo. Datos respaldados únicamente de manera local.");
-                return;
-            }
-
-            const timestamp = workoutData.timestamp || Date.now();
-            const filename = `workout_${timestamp}.json`;
-            const url = `https://api.github.com/repos/${user}/${repo}/contents/mailbox/${filename}`;
-
-            try {
-                const jsonString = JSON.stringify(workoutData, null, 2);
-                const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
-
-                const payload = {
-                    message: `⚡ entreno auto-sync: ${workoutData.date || new Date().toISOString().split('T')[0]}`,
-                    content: base64Content
-                };
-
-                const response = await fetch(url, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                if (response.ok) {
-                    console.log(`✅ Entrenamiento volcado con éxito al buzón: mailbox/${filename}`);
-                } else {
-                    const errorData = await response.json();
-                    console.error("❌ Error de comunicación con la API de GitHub:", errorData.message);
-                }
-            } catch (error) {
-                console.error("🚨 Error crítico de red al conectar con GitHub Mailbox:", error);
+        //<-----cancelworkout: cancela y borra todo el progreso de la sesión actual----------
+        function cancelWorkout() {
+            if (confirm("⚠️ ¿Estás seguro de que quieres cancelar el entrenamiento? Se perderá todo el progreso de la sesión activa de hoy.")) {
+                clearInterval(workoutTimerInterval);
+                workoutStartTime = null;
+                isWorkoutModified = false;
+                localStorage.removeItem('raw_gym_workout_start_time');
+                localStorage.removeItem('raw_gym_is_modified');
+                
+                document.getElementById('workout-timer-display').style.display = 'none';
+                document.getElementById('btn-cancel').style.display = 'none';
+                
+                currentWorkout = null;
+                currentWorkoutName = "";
+                saveState();
+                renderWorkout();
             }
         }
 
+        //<-----finishworkout: finaliza la sesión, la guarda en el historial y activa el auto-sync de github----------
         function finishWorkout() {
             if(confirm("¿Guardar entrenamiento?")) {
                 const now = new Date();
@@ -1606,9 +1660,58 @@
             }
         }
 
-        // --- HISTORIAL CON CALENDARIO INTERACTIVO ---
+        ////----------------BUZÓN ASÍNCRONO DE GITHUB-------------
+
+        //<-----sendtogithubmailbox: realiza la subida asíncrona mediante la API de GitHub REST----------
+        async function sendToGitHubMailbox(workoutData) {
+            const user = localStorage.getItem('raw_gym_gh_user');
+            const repo = localStorage.getItem('raw_gym_gh_repo');
+            const token = localStorage.getItem('raw_gym_gh_token');
+
+            if (!user || !repo || !token) {
+                console.log("Buzón de GitHub no configurado por completo. Datos respaldados únicamente de manera local.");
+                return;
+            }
+
+            const timestamp = workoutData.timestamp || Date.now();
+            const filename = `workout_${timestamp}.json`;
+            const url = `https://api.github.com/repos/${user}/${repo}/contents/mailbox/${filename}`;
+
+            try {
+                const jsonString = JSON.stringify(workoutData, null, 2);
+                const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+
+                const payload = {
+                    message: `⚡ entreno auto-sync: ${workoutData.date || new Date().toISOString().split('T')[0]}`,
+                    content: base64Content
+                };
+
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    console.log(`✅ Entrenamiento volcado con éxito al buzón: mailbox/${filename}`);
+                } else {
+                    const errorData = await response.json();
+                    console.error("❌ Error de comunicación con la API de GitHub:", errorData.message);
+                }
+            } catch (error) {
+                console.error("🚨 Error crítico de red al conectar con GitHub Mailbox:", error);
+            }
+        }
+
+        ////----------------HISTORIAL Y CALENDARIO INTERACTIVO-------------
+
         let currentCalendarDate = new Date(); 
 
+        //<-----renderhistory: renderiza la cuadrícula mensual e indica los días entrenados----------
         function renderHistory() {
             const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
             const year = currentCalendarDate.getFullYear();
@@ -1703,11 +1806,13 @@
             }
         }
 
+        //<-----changecalendarmonth: navega entre los meses del calendario----------
         function changeCalendarMonth(offset) {
             currentCalendarDate.setMonth(currentCalendarDate.getMonth() + offset);
             renderHistory();
         }
 
+        //<-----showdayworkouts: muestra el desglose del entrenamiento en la fecha pulsada----------
         function showDayWorkouts(day, dayWorkouts, isDefaultToday = false) {
             const container = document.getElementById('calendar-day-details');
             if (!container) return;
@@ -1774,6 +1879,7 @@
             });
         }
 
+        //<-----deletehistoryitem: elimina una entrada del historial de entrenamientos----------
         function deleteHistoryItem(idx) {
             if (confirm("¿Borrar este entrenamiento del historial?")) {
                 history.splice(idx, 1);
@@ -1782,7 +1888,9 @@
             }
         }
 
-        // --- SISTEMA DE GRÁFICOS ---
+        ////----------------GRÁFICOS Y ESTADÍSTICAS DE EVOLUCIÓN-------------
+
+        //<-----renderchartsexerciselist: genera la lista de ejercicios para inspeccionar gráficas----------
         function renderChartsExerciseList() {
             const listContainer = document.getElementById('chart-exercises-list');
             listContainer.innerHTML = '';
@@ -1806,10 +1914,12 @@
             });
         }
 
+        //<-----closeactivecharts: oculta las gráficas de evolución activa----------
         function closeActiveCharts() {
             document.getElementById('active-charts-display').style.display = 'none';
         }
 
+        //<-----showexercisecharts: procesa los máximos del mes y año para dibujar SVG----------
         function showExerciseCharts(exerciseName) {
             document.getElementById('active-charts-display').style.display = 'block';
             document.getElementById('active-chart-title').innerText = exerciseName;
@@ -1861,6 +1971,7 @@
             document.getElementById('active-charts-display').scrollIntoView({ behavior: 'smooth' });
         }
 
+        //<-----buildsinglesvgchart: genera el código vectorial SVG dinámico de la gráfica----------
         function buildSingleSvgChart(containerId, points) {
             const container = document.getElementById(containerId);
             if (points.length === 0) {
@@ -1917,35 +2028,7 @@
             container.innerHTML = svgHtml;
         }
 
-        // --- PERSISTENCIA ---
-        function saveTemplates() { localStorage.setItem('raw_gym_templates', JSON.stringify(templates)); }
-        function saveState() {
-            localStorage.setItem('raw_gym_current_workout', JSON.stringify(currentWorkout));
-            localStorage.setItem('raw_gym_current_name', currentWorkoutName);
-        }
-
-        function loadState() {
-            const savedTemplates = localStorage.getItem('raw_gym_templates');
-            if (savedTemplates) {
-                templates = JSON.parse(savedTemplates);
-            } else {
-                templates = JSON.parse(JSON.stringify(defaultTemplates));
-                saveTemplates();
-            }
-            const savedWorkout = localStorage.getItem('raw_gym_current_workout');
-            const savedName = localStorage.getItem('raw_gym_current_name');
-            const savedHistory = localStorage.getItem('raw_gym_history');
-            const savedStartTime = localStorage.getItem('raw_gym_workout_start_time');
-            const savedModified = localStorage.getItem('raw_gym_is_modified');
-
-            if (savedWorkout) currentWorkout = JSON.parse(savedWorkout);
-            if (savedName) currentWorkoutName = savedName;
-            if (savedHistory) history = JSON.parse(savedHistory);
-            if (savedStartTime) workoutStartTime = parseInt(savedStartTime);
-            if (savedModified) isWorkoutModified = (savedModified === 'true');
-        }
-
-        // --- CÁLCULO Y RENDERIZADO DEL VOLUMEN MUSCULAR SEMANAL ---
+        //<-----renderweeklymusclevolume: genera la gráfica de volumen de series acumuladas por músculo----------
         function renderWeeklyMuscleVolume() {
             const container = document.getElementById('muscle-volume-chart-container');
             if (!container) return;
@@ -2014,56 +2097,9 @@
             container.innerHTML = svgHtml;
         }
 
-        // --- SISTEMA DEL CRONÓMETRO DE ENTRENAMIENTO GLOBAL ---
-        function startWorkoutTimer() {
-            clearInterval(workoutTimerInterval);
-            const timerDisplay = document.getElementById('workout-timer-display');
-            if (!timerDisplay) return;
+        ////----------------ALGORITMO DE DISTRIBUCIÓN DE DISCOS-------------
 
-            timerDisplay.style.display = 'inline-block';
-
-            function updateDisplay() {
-                if (!workoutStartTime) return;
-                const elapsedMs = Date.now() - workoutStartTime;
-                const totalSeconds = Math.floor(elapsedMs / 1000);
-                
-                const hrs = Math.floor(totalSeconds / 3600);
-                const mins = Math.floor((totalSeconds % 3600) / 60);
-                const secs = totalSeconds % 60;
-
-                let timeStr = "";
-                if (hrs > 0) {
-                    timeStr = `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                } else {
-                    timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                }
-                timerDisplay.innerText = `⏱️ ${timeStr}`;
-            }
-
-            updateDisplay();
-            workoutTimerInterval = setInterval(updateDisplay, 1000);
-        }
-
-        // --- ACCIÓN DE CANCELAR ENTRENAMIENTO ---
-        function cancelWorkout() {
-            if (confirm("⚠️ ¿Estás seguro de que quieres cancelar el entrenamiento? Se perderá todo el progreso de la sesión activa de hoy.")) {
-                clearInterval(workoutTimerInterval);
-                workoutStartTime = null;
-                isWorkoutModified = false;
-                localStorage.removeItem('raw_gym_workout_start_time');
-                localStorage.removeItem('raw_gym_is_modified');
-                
-                document.getElementById('workout-timer-display').style.display = 'none';
-                document.getElementById('btn-cancel').style.display = 'none';
-                
-                currentWorkout = null;
-                currentWorkoutName = "";
-                saveState();
-                renderWorkout();
-            }
-        }
-
-        // --- ALGORITMO OPTIMIZADO DE DISTRIBUCIÓN DE DISCOS FILTRADO ---
+        //<-----getmindisks: calcula la combinación con el menor número de discos por lado----------
         function getMinDisks(target) {
             let t = Math.round(target * 100);
             if (t < 0 || t % 125 !== 0) return null; 
@@ -2106,6 +2142,7 @@
             return result.sort((a,b) => parseFloat(b) - parseFloat(a));
         }
 
+        //<-----getdiskscombination: mapea los colores oficiales de cada disco en HTML----------
         function getDisksCombination(totalWeight, baseWeight) {
             let netWeight = totalWeight - baseWeight;
             if (netWeight < 0) return '<span style="color: var(--accent-red);">⚠️ &lt; bar</span>';
@@ -2136,8 +2173,8 @@
                 else if (d === '15') color = 'var(--accent-yellow)';   
                 else if (d === '10') color = 'var(--accent-green)';    
                 else if (d === '5') color = '#ffffff';                 
-                else if (d === '2.5') color = '#ff9f0a';               
-                else if (d === '1.25') color = '#ff375f';              
+                else if (d === '2.5') color = '#ffd60a'; // Dorado             
+                else if (d === '1.25') color = '#bf5af2'; // Morado              
                 return `<span style="color: ${color};">${displayVal}</span>`;
             });
             
@@ -2156,6 +2193,7 @@
             }
         }
 
+        //<-----calculateweighthelper: determina qué asistente de carga mostrar según equipamiento----------
         function calculateWeightHelper(weight, equipType) {
             if (!weight || weight <= 0) return '';
             
@@ -2179,7 +2217,40 @@
             }
         }
 
-        // --- SISTEMA DE COPIA DE SEGURIDAD OPTIMIZADO PARA PWA ---
+        ////----------------PERSISTENCIA Y COPIAS DE SEGURIDAD-------------
+
+        //<-----savetemplates: guarda la estructura de plantillas en localstorage----------
+        function saveTemplates() { localStorage.setItem('raw_gym_templates', JSON.stringify(templates)); }
+
+        //<-----savestate: guarda el estado actual del entrenamiento activo----------
+        function saveState() {
+            localStorage.setItem('raw_gym_current_workout', JSON.stringify(currentWorkout));
+            localStorage.setItem('raw_gym_current_name', currentWorkoutName);
+        }
+
+        //<-----loadstate: recupera toda la información almacenada en el dispositivo----------
+        function loadState() {
+            const savedTemplates = localStorage.getItem('raw_gym_templates');
+            if (savedTemplates) {
+                templates = JSON.parse(savedTemplates);
+            } else {
+                templates = JSON.parse(JSON.stringify(defaultTemplates));
+                saveTemplates();
+            }
+            const savedWorkout = localStorage.getItem('raw_gym_current_workout');
+            const savedName = localStorage.getItem('raw_gym_current_name');
+            const savedHistory = localStorage.getItem('raw_gym_history');
+            const savedStartTime = localStorage.getItem('raw_gym_workout_start_time');
+            const savedModified = localStorage.getItem('raw_gym_is_modified');
+
+            if (savedWorkout) currentWorkout = JSON.parse(savedWorkout);
+            if (savedName) currentWorkoutName = savedName;
+            if (savedHistory) history = JSON.parse(savedHistory);
+            if (savedStartTime) workoutStartTime = parseInt(savedStartTime);
+            if (savedModified) isWorkoutModified = (savedModified === 'true');
+        }
+
+        //<-----exportgymdata: genera el respaldo en JSON o lo copia al portapapeles----------
         function exportGymData() {
             const backupData = {
                 templates: JSON.parse(localStorage.getItem('raw_gym_templates') || '{}'),
@@ -2228,10 +2299,12 @@
             }
         }
 
+        //<-----triggerimportfileinput: lanza el selector nativo de archivos .json----------
         function triggerImportFileInput() {
             document.getElementById('import-file-input').click();
         }
 
+        //<-----importgymdata: procesa e importa una copia de seguridad válida----------
         function importGymData(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -2265,15 +2338,9 @@
             reader.readAsText(file);
             event.target.value = '';
         }
-        
-        // --- INICIALIZACIÓN DE LA APLICACIÓN ---
-        loadState();
-        if (currentWorkout !== null) {
-            startWorkoutTimer(); 
-        }
-        renderWorkout();
 
-        // ==================== LÓGICA DEL TEMPORIZADOR DE DESCANSO Y AUDIOS ====================
+        ////----------------TEMPORIZADOR Y AUDIO DE ALARMA-------------
+
         let timerDuration = 120; 
         let timerSecondsLeft = 0;
         let timerInterval = null;
@@ -2283,6 +2350,7 @@
 
         let audioCtx = null;
 
+        //<-----unlockaudio: desbloquea el canal de audio del navegador tras el toque inicial----------
         function unlockAudio() {
             if (!audioCtx) {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -2294,7 +2362,7 @@
         document.addEventListener('click', unlockAudio, { passive: true });
         document.addEventListener('touchstart', unlockAudio, { passive: true });
 
-        // SONIDO Y VIBRACIÓN OPTIMIZADOS
+        //<-----playtimersound: genera ráfagas de tonos agudos de alta frecuencia para sonar sobre música----------
         function playTimerSound() {
             try {
                 unlockAudio();
@@ -2339,6 +2407,7 @@
             }
         }
 
+        //<-----toggletimerfullscreen: abre o cierra la vista del temporizador a pantalla completa----------
         function toggleTimerFullscreen(show) {
             const overlay = document.getElementById('fullscreen-timer');
             if (show) {
@@ -2353,6 +2422,7 @@
             }
         }
 
+        //<-----startfullscreentimer: inicia la cuenta atrás del temporizador con la duración exacta----------
         function startFullscreenTimer(seconds) {
             clearInterval(timerInterval);
             timerDuration = seconds;
@@ -2384,6 +2454,7 @@
             }, 250);
         }
 
+        //<-----updatefullscreenui: actualiza los textos y el anillo de progreso circular del temporizador----------
         function updateFullscreenUI() {
             const minutes = Math.floor(timerSecondsLeft / 60);
             const seconds = timerSecondsLeft % 60;
@@ -2412,6 +2483,7 @@
             }
         }
 
+        //<-----toggletimeractive: pausa o reanuda el tiempo de descanso activo----------
         function toggleTimerActive() {
             isTimerPaused = !isTimerPaused;
             const btn = document.getElementById('btn-timer-toggle');
@@ -2428,6 +2500,7 @@
             }
         }
 
+        //<-----adjusttimer: suma o resta segundos al descanso actual----------
         function adjustTimer(amount) {
             if (isTimerPaused) {
                 pausedTimeLeft += amount;
@@ -2442,8 +2515,40 @@
             updateFullscreenUI();
         }
 
+        //<-----resettimerfullscreen: reinicia la cuenta atrás a 2 min 15 seg por defecto----------
         function resetTimerFullscreen() { startFullscreenTimer(135); }
 
+        //<-----startworkouttimer: cronómetro global que mide la duración total de la sesión activa----------
+        function startWorkoutTimer() {
+            clearInterval(workoutTimerInterval);
+            const timerDisplay = document.getElementById('workout-timer-display');
+            if (!timerDisplay) return;
+
+            timerDisplay.style.display = 'inline-block';
+
+            function updateDisplay() {
+                if (!workoutStartTime) return;
+                const elapsedMs = Date.now() - workoutStartTime;
+                const totalSeconds = Math.floor(elapsedMs / 1000);
+                
+                const hrs = Math.floor(totalSeconds / 3600);
+                const mins = Math.floor((totalSeconds % 3600) / 60);
+                const secs = totalSeconds % 60;
+
+                let timeStr = "";
+                if (hrs > 0) {
+                    timeStr = `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                } else {
+                    timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                }
+                timerDisplay.innerText = `⏱️ ${timeStr}`;
+            }
+
+            updateDisplay();
+            workoutTimerInterval = setInterval(updateDisplay, 1000);
+        }
+
+        // CONTROL DE VISIBILIDAD DE PANTALLA EN MÓVILES
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && timerInterval && !isTimerPaused) {
                 const msLeft = timerEndTime - Date.now();
@@ -2462,6 +2567,13 @@
         document.addEventListener('touchstart', function (event) {
             if (event.touches.length > 1) event.preventDefault();
         }, { passive: false });
+
+        ////----------------INICIALIZACIÓN DE LA APLICACIÓN-------------
+        loadState();
+        if (currentWorkout !== null) {
+            startWorkoutTimer(); 
+        }
+        renderWorkout();
     </script>
     
     <script>
