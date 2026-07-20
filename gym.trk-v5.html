@@ -4,10 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>RAW TRACKER PRO</title>
+    
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <style>
+        /* ----------------HOJA DE ESTILOS CSS PRINCIPAL------------- */
+
+        /* <-----variables del tema visual y paleta de colores---------- */
         :root {
             --bg-main: #0a0a0a;
             --bg-card: #141414;
@@ -21,7 +26,8 @@
             --accent-blue: #0a84ff;
             --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        /* BLOQUEO DE MOVIMIENTOS PARÁSITOS EN IOS */
+
+        /* <-----bloqueo de gestos parasitos y scroll en ios---------- */
         html, body {
             background-color: var(--bg-main);
             color: var(--text-primary);
@@ -32,6 +38,7 @@
             -webkit-overflow-scrolling: touch;
         }
 
+        /* <-----reseteo global de margenes y comportamiento de toques---------- */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -41,12 +48,14 @@
             touch-action: manipulation; /* Deshabilita el zoom por doble toque en iOS */
         }
 
+        /* <-----layout base del cuerpo y adaptacion a isla dinamica---------- */
         body {
             padding: 16px;
             padding-top: calc(16px + env(safe-area-inset-top)); /* Empuja el contenido hacia abajo de forma dinámica evitando la Isla Dinámica */
             padding-bottom: 160px;
         }
 
+        /* <-----encabezados y jerarquia de titulos---------- */
         header {
             display: flex;
             justify-content: space-between;
@@ -72,6 +81,7 @@
             letter-spacing: 0.5px;
         }
 
+        /* <-----gestion de visibilidad de vistas---------- */
         .view {
             display: none;
         }
@@ -80,6 +90,7 @@
             display: block;
         }
 
+        /* <-----botones generales y de accion---------- */
         .btn {
             background: var(--bg-card);
             color: var(--text-primary);
@@ -108,7 +119,7 @@
             margin-top: 8px;
         }
 
-        /* PILL DE TEMPORIZADOR ESTILO STRONG */
+        /* <-----pill de temporizador de descanso estilo strong---------- */
         .rest-timer-pill {
             display: inline-flex;
             align-items: center;
@@ -128,7 +139,7 @@
             background: var(--border-color);
         }
 
-        /* FIJACIÓN INMUTABLE DE LAS BARRAS INFERIORES */
+        /* <-----barra de navegacion inferior fija---------- */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -162,6 +173,7 @@
             border-bottom: 2px solid var(--text-primary);
         }
 
+        /* <-----barra flotante del temporizador de descanso---------- */
         .timer-bar {
             position: fixed;
             bottom: 60px;
@@ -178,6 +190,7 @@
             user-select: none;
         }
 
+        /* <-----tarjetas de ejercicios y tablas de series---------- */
         .exercise-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -238,6 +251,7 @@
             background: rgba(48, 209, 88, 0.05);
         }
 
+        /* <-----campos de entrada de texto y numeros---------- */
         input[type="number"], input[type="text"], input[type="password"] {
             width: 100%;
             background: var(--bg-input);
@@ -255,6 +269,7 @@
             text-align: center;
         }
 
+        /* <-----boton de marcacion de serie completada---------- */
         .check-btn {
             width: 34px;
             height: 34px;
@@ -274,6 +289,7 @@
             color: var(--bg-main);
         }
 
+        /* <-----insignias para tipos de serie (n, c, f, d)---------- */
         .set-type-badge {
             display: inline-block;
             width: 28px;
@@ -302,6 +318,7 @@
             font-size: 0.8rem;
         }
 
+        /* <-----listas del historial y elementos de graficos---------- */
         .history-item {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -359,6 +376,7 @@
             margin-bottom: 16px;
         }
 
+        /* <-----ventanas modales y capas superpuestas---------- */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -406,7 +424,7 @@
             text-align: center;
         }
         
-        /* --- TEMPORIZADOR MAXIMIZADO A PANTALLA COMPLETA --- */
+        /* <-----temporizador maximizado a pantalla completa---------- */
         .fullscreen-overlay {
             position: fixed;
             top: 0;
@@ -800,7 +818,7 @@
     </nav>
 
     <script>
-        ////----------------INICIALIZACIÓN Y VARIABLES GLOBALES-------------
+        //----------------INICIALIZACIÓN Y VARIABLES GLOBALES-------------
         // Push, Pull y Upper -> 2 min 15 seg (135s)
         // Legs y Lower -> 3 min (180s)
         const defaultTemplates = {
@@ -876,7 +894,7 @@
             return s > 0 ? `${m}m ${s}s` : `${m}m`;
         }
 
-        ////----------------CONFIGURACIÓN DE DISCOS Y GITHUB-------------
+        //----------------CONFIGURACIÓN DE DISCOS Y GITHUB-------------
 
         //<-----toggleconfigaccordion: controla el comportamiento de acordeón estricto (opcion B)----------
         function toggleConfigAccordion(section) {
@@ -975,7 +993,7 @@
             if (currentWorkout) renderWorkout();
         }
 
-        ////----------------MODALES Y NAVEGACIÓN GENERAL-------------
+        //----------------MODALES Y NAVEGACIÓN GENERAL-------------
 
         //<-----switchview: cambia entre las pestañas principales de la app----------
         function switchView(viewId, buttonElement) {
@@ -1114,7 +1132,7 @@
             }
         }
 
-        ////----------------GESTIÓN DE RUTINAS Y PLANTILLAS-------------
+        //----------------GESTIÓN DE RUTINAS Y PLANTILLAS-------------
 
         //<-----renderroutines: dibuja las tarjetas de plantillas en la pestaña Rutinas----------
         function renderRoutines() {
@@ -1241,7 +1259,7 @@
         //<-----cancelroutineeditor: descarta los cambios del editor de plantillas----------
         function cancelRoutineEditor() { switchView('routines'); }
 
-        ////----------------ENTRENAMIENTO ACTIVO Y SESIÓN-------------
+        //----------------ENTRENAMIENTO ACTIVO Y SESIÓN-------------
 
         //<-----startroutine: arranca un entrenamiento activo usando una plantilla----------
         function startRoutine(key) {
@@ -1660,7 +1678,7 @@
             }
         }
 
-        ////----------------BUZÓN ASÍNCRONO DE GITHUB-------------
+        //----------------BUZÓN ASÍNCRONO DE GITHUB-------------
 
         //<-----sendtogithubmailbox: realiza la subida asíncrona mediante la API de GitHub REST----------
         async function sendToGitHubMailbox(workoutData) {
@@ -1707,7 +1725,7 @@
             }
         }
 
-        ////----------------HISTORIAL Y CALENDARIO INTERACTIVO-------------
+        //----------------HISTORIAL Y CALENDARIO INTERACTIVO-------------
 
         let currentCalendarDate = new Date(); 
 
@@ -1888,7 +1906,7 @@
             }
         }
 
-        ////----------------GRÁFICOS Y ESTADÍSTICAS DE EVOLUCIÓN-------------
+        //----------------GRÁFICOS Y ESTADÍSTICAS DE EVOLUCIÓN-------------
 
         //<-----renderchartsexerciselist: genera la lista de ejercicios para inspeccionar gráficas----------
         function renderChartsExerciseList() {
@@ -2097,7 +2115,7 @@
             container.innerHTML = svgHtml;
         }
 
-        ////----------------ALGORITMO DE DISTRIBUCIÓN DE DISCOS-------------
+        //----------------ALGORITMO DE DISTRIBUCIÓN DE DISCOS-------------
 
         //<-----getmindisks: calcula la combinación con el menor número de discos por lado----------
         function getMinDisks(target) {
@@ -2217,7 +2235,7 @@
             }
         }
 
-        ////----------------PERSISTENCIA Y COPIAS DE SEGURIDAD-------------
+        //----------------PERSISTENCIA Y COPIAS DE SEGURIDAD-------------
 
         //<-----savetemplates: guarda la estructura de plantillas en localstorage----------
         function saveTemplates() { localStorage.setItem('raw_gym_templates', JSON.stringify(templates)); }
@@ -2339,7 +2357,7 @@
             event.target.value = '';
         }
 
-        ////----------------TEMPORIZADOR Y AUDIO DE ALARMA-------------
+        //----------------TEMPORIZADOR Y AUDIO DE ALARMA-------------
 
         let timerDuration = 120; 
         let timerSecondsLeft = 0;
@@ -2548,7 +2566,9 @@
             workoutTimerInterval = setInterval(updateDisplay, 1000);
         }
 
-        // CONTROL DE VISIBILIDAD DE PANTALLA EN MÓVILES
+        //----------------GESTIÓN DE EVENTOS DE PANTALLA E INICIALIZACIÓN-------------
+
+        //<-----eventlistener: reaccion al cambio de visibilidad de la ventana en moviles----------
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && timerInterval && !isTimerPaused) {
                 const msLeft = timerEndTime - Date.now();
@@ -2564,11 +2584,12 @@
             }
         });
 
+        //<-----eventlistener: prevencion de gestos multitactiles parasitarios----------
         document.addEventListener('touchstart', function (event) {
             if (event.touches.length > 1) event.preventDefault();
         }, { passive: false });
 
-        ////----------------INICIALIZACIÓN DE LA APLICACIÓN-------------
+        //<-----inicializacion: carga del estado guardado y arranque de la interfaz----------
         loadState();
         if (currentWorkout !== null) {
             startWorkoutTimer(); 
