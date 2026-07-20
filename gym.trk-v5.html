@@ -108,6 +108,26 @@
             margin-top: 8px;
         }
 
+        /* PILL DE TEMPORIZADOR ESTILO STRONG */
+        .rest-timer-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--accent-yellow);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .rest-timer-pill:active {
+            background: var(--border-color);
+        }
+
         /* FIJACIÓN INMUTABLE DE LAS BARRAS INFERIORES */
         .bottom-nav {
             position: fixed;
@@ -520,6 +540,19 @@
                 <input type="text" id="modal-reps-input" placeholder="Ej: 6-8, 8-10, 10-12..." style="font-size: 0.9rem;">
             </div>
 
+            <div id="modal-rest-container" style="margin-top: 12px; display: none;">
+                <label style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 4px;">Tiempo de Descanso:</label>
+                <select id="modal-rest-select" style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px; font-size: 1rem; font-weight: 600; outline: none;">
+                    <option value="60">1 min (60s)</option>
+                    <option value="90">1.5 min (90s)</option>
+                    <option value="120">2 min (120s)</option>
+                    <option value="135" selected>2 min 15 seg (135s)</option>
+                    <option value="150">2.5 min (150s)</option>
+                    <option value="180">3 min (180s)</option>
+                    <option value="240">4 min (240s)</option>
+                </select>
+            </div>
+
             <div id="modal-muscle-container" style="margin-top: 12px; display: none;">
                 <label style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 4px;">Grupo muscular:</label>
                 <select id="modal-muscle-select" style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px; font-size: 1rem; font-weight: 600; outline: none;">
@@ -555,6 +588,30 @@
                 <button class="btn" onclick="closeCustomModal()">Cancelar</button>
                 <button class="btn btn-success" id="modal-confirm-btn">Confirmar</button>
             </div>
+        </div>
+    </div>
+
+    <div id="rest-picker-modal" class="modal-overlay">
+        <div class="modal-box" style="text-align: center;">
+            <div class="modal-title" id="rest-modal-title">Tiempo de Descanso</div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 14px; text-transform: uppercase;">Selecciona la duración entre series:</p>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
+                <button class="btn" onclick="selectPresetRest(60)">1m</button>
+                <button class="btn" onclick="selectPresetRest(90)">1m 30s</button>
+                <button class="btn" onclick="selectPresetRest(120)">2m</button>
+                <button class="btn" onclick="selectPresetRest(135)" style="color: var(--accent-yellow); border-color: var(--accent-yellow);">2m 15s</button>
+                <button class="btn" onclick="selectPresetRest(150)">2m 30s</button>
+                <button class="btn" onclick="selectPresetRest(180)" style="color: var(--accent-yellow); border-color: var(--accent-yellow);">3m</button>
+                <button class="btn" onclick="selectPresetRest(210)">3m 30s</button>
+                <button class="btn" onclick="selectPresetRest(240)">4m</button>
+                <button class="btn" onclick="selectPresetRest(300)">5m</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                <span style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Segundos:</span>
+                <input type="number" id="custom-rest-seconds-input" placeholder="ej: 135" style="font-size: 0.9rem;">
+                <button class="btn btn-success" onclick="applyCustomRestInput()">OK</button>
+            </div>
+            <button class="btn btn-block" onclick="closeRestPickerModal()">Cancelar</button>
         </div>
     </div>
 
@@ -731,46 +788,48 @@
     </nav>
 
     <script>
-        // --- PLANTILLAS ACTUALIZADAS CON TU RUTINA PPL/UL Y CLASIFICACIÓN MUSCULAR ---
+        // --- PLANTILLAS ACTUALIZADAS CON TU RUTINA PPL/UL, CLASIFICACIÓN MUSCULAR Y TIEMPOS DE DESCANSO ---
+        // Push, Pull y Upper -> 2 min 15 seg (135s)
+        // Legs y Lower -> 3 min (180s)
         const defaultTemplates = {
             'Push': [
-                { name: 'Press banca inclinado', muscle: 'Pecho', targetReps: '6-8', equipType: 'smith', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Elevaciones laterales', muscle: 'Hombro lateral', targetReps: '8-10', equipType: 'dumbbell', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Triceps Pushdowns', muscle: 'Triceps', targetReps: '7-9', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Seated cable Fly', muscle: 'Pecho', targetReps: '8-10', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Press militar', muscle: 'Hombro frontal', targetReps: '8-10', equipType: 'smith', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Extension de triceps', muscle: 'Triceps', targetReps: '8-10', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Press banca inclinado', muscle: 'Pecho', targetReps: '6-8', restTimer: 135, equipType: 'smith', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Elevaciones laterales', muscle: 'Hombro lateral', targetReps: '8-10', restTimer: 135, equipType: 'dumbbell', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Triceps Pushdowns', muscle: 'Triceps', targetReps: '7-9', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Seated cable Fly', muscle: 'Pecho', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Press militar', muscle: 'Hombro frontal', targetReps: '8-10', restTimer: 135, equipType: 'smith', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Extension de triceps', muscle: 'Triceps', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ],
             'Pull': [
-                { name: 'Jalon al pecho en polea', muscle: 'Espalda', targetReps: '6-8', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Biceps en doble/simple polea', muscle: 'Biceps', targetReps: '8-10', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Remo en cable', muscle: 'Espalda', targetReps: '7-9', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Curl martillo en polea', muscle: 'Biceps', targetReps: '8-10', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Remo smith', muscle: 'Espalda', targetReps: '7-9', equipType: 'smith', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Isolateral reverse fly polea', muscle: 'Hombro posterior', targetReps: '8-10', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Jalon al pecho en polea', muscle: 'Espalda', targetReps: '6-8', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Biceps en doble/simple polea', muscle: 'Biceps', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Remo en cable', muscle: 'Espalda', targetReps: '7-9', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Curl martillo en polea', muscle: 'Biceps', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Remo smith', muscle: 'Espalda', targetReps: '7-9', restTimer: 135, equipType: 'smith', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Isolateral reverse fly polea', muscle: 'Hombro posterior', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ],
             'Legs': [
-                { name: 'Flexion de piernas estirado', muscle: 'Isquiotibiales', targetReps: '6-8', equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Press de piernas en maquina', muscle: 'Quadriceps', targetReps: '6-8', equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Elevacion de talones press', muscle: 'Gemelos', targetReps: '8-10', equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Bulgaras', muscle: 'Quadriceps', targetReps: '7-9', equipType: 'dumbbell', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Romanian dedlift (RDL)', muscle: 'Isquiotibiales', targetReps: '6-8', equipType: 'barbell-olympic', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Flexion de piernas estirado', muscle: 'Isquiotibiales', targetReps: '6-8', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Press de piernas en maquina', muscle: 'Quadriceps', targetReps: '6-8', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Elevacion de talones press', muscle: 'Gemelos', targetReps: '8-10', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Bulgaras', muscle: 'Quadriceps', targetReps: '7-9', restTimer: 180, equipType: 'dumbbell', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Romanian dedlift (RDL)', muscle: 'Isquiotibiales', targetReps: '6-8', restTimer: 180, equipType: 'barbell-olympic', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] }
             ],
             'Upper': [
-                { name: 'Press banca inclinado', muscle: 'Pecho', targetReps: '6-8', equipType: 'smith', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Seated cable Fly', muscle: 'Pecho', targetReps: '8-10', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Jalon al pecho en polea', muscle: 'Espalda', targetReps: '6-8', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Elevaciones laterales', muscle: 'Hombro lateral', targetReps: '8-10', equipType: 'dumbbell', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Remo smith', muscle: 'Espalda', targetReps: '7-9', equipType: 'smith', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Extension de triceps', muscle: 'Triceps', targetReps: '8-10', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Biceps en doble/simple polea', muscle: 'Biceps', targetReps: '8-10', equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Press banca inclinado', muscle: 'Pecho', targetReps: '6-8', restTimer: 135, equipType: 'smith', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Seated cable Fly', muscle: 'Pecho', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Jalon al pecho en polea', muscle: 'Espalda', targetReps: '6-8', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Elevaciones laterales', muscle: 'Hombro lateral', targetReps: '8-10', restTimer: 135, equipType: 'dumbbell', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Remo smith', muscle: 'Espalda', targetReps: '7-9', restTimer: 135, equipType: 'smith', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Extension de triceps', muscle: 'Triceps', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Biceps en doble/simple polea', muscle: 'Biceps', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ],
             'Lower': [
-                { name: 'Flexion de piernas (sentado)', muscle: 'Isquiotibiales', targetReps: '6-8', equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Sentadilla con barra smith', muscle: 'Quadriceps', targetReps: '6-8', equipType: 'smith', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Romanian dedlift (RDL)', muscle: 'Isquiotibiales', targetReps: '6-8', equipType: 'barbell-olympic', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Extension de quadriceps', muscle: 'Quadriceps', targetReps: '8-10', equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Elevacion talones (sentado)', muscle: 'Gemelos', targetReps: '8-10', equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Flexion de piernas (sentado)', muscle: 'Isquiotibiales', targetReps: '6-8', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Sentadilla con barra smith', muscle: 'Quadriceps', targetReps: '6-8', restTimer: 180, equipType: 'smith', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Romanian dedlift (RDL)', muscle: 'Isquiotibiales', targetReps: '6-8', restTimer: 180, equipType: 'barbell-olympic', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Extension de quadriceps', muscle: 'Quadriceps', targetReps: '8-10', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Elevacion talones (sentado)', muscle: 'Gemelos', targetReps: '8-10', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ]
         };
 
@@ -799,7 +858,14 @@
         let editingRoutineKey = null;
         let editingRoutineData = null;
 
-        function openCustomModal(title, placeholder, onConfirm, showMuscleSelect = false, showEquipSelect = false, showTargetReps = false) {
+        function formatRestTime(secs) {
+            if (!secs || secs <= 0) secs = 120;
+            const m = Math.floor(secs / 60);
+            const s = secs % 60;
+            return s > 0 ? `${m}m ${s}s` : `${m}m`;
+        }
+
+        function openCustomModal(title, placeholder, onConfirm, showMuscleSelect = false, showEquipSelect = false, showTargetReps = false, showRestTimer = false) {
             document.getElementById('modal-title').innerText = title;
             const input = document.getElementById('modal-input');
             input.value = '';
@@ -808,6 +874,10 @@
             const repsContainer = document.getElementById('modal-reps-container');
             const repsInput = document.getElementById('modal-reps-input');
             if (repsInput) repsInput.value = '8-10';
+
+            const restContainer = document.getElementById('modal-rest-container');
+            const restSelect = document.getElementById('modal-rest-select');
+            if (restSelect) restSelect.value = '135';
 
             const muscleContainer = document.getElementById('modal-muscle-container');
             const muscleSelect = document.getElementById('modal-muscle-select');
@@ -818,6 +888,12 @@
                 repsContainer.style.display = 'block';
             } else {
                 repsContainer.style.display = 'none';
+            }
+
+            if (showRestTimer) {
+                restContainer.style.display = 'block';
+            } else {
+                restContainer.style.display = 'none';
             }
 
             if (showMuscleSelect) {
@@ -840,12 +916,13 @@
             document.getElementById('modal-confirm-btn').onclick = function() {
                 const val = input.value.trim();
                 const targetRepsVal = repsInput ? repsInput.value.trim() || '8-10' : '8-10';
+                const restTimerVal = restSelect ? parseInt(restSelect.value) || 135 : 135;
 
                 if (val) {
                     if (showMuscleSelect && showEquipSelect) {
-                        onConfirm(val, muscleSelect.value, equipSelect.value, targetRepsVal);
+                        onConfirm(val, muscleSelect.value, equipSelect.value, targetRepsVal, restTimerVal);
                     } else if (showMuscleSelect) {
-                        onConfirm(val, muscleSelect.value, targetRepsVal);
+                        onConfirm(val, muscleSelect.value, targetRepsVal, restTimerVal);
                     } else {
                         onConfirm(val);
                     }
@@ -856,6 +933,57 @@
 
         function closeCustomModal() {
             document.getElementById('custom-modal').classList.remove('active');
+        }
+
+        // GESTIÓN DEL MODAL DE SELECCIÓN RÁPIDA DE TIEMPO DE DESCANSO
+        let currentRestTargetType = null; // 'workout' o 'editor'
+        let currentRestTargetIndex = null;
+
+        function openChangeRestTimerModal(exIndex) {
+            currentRestTargetType = 'workout';
+            currentRestTargetIndex = exIndex;
+            const ex = currentWorkout[exIndex];
+            document.getElementById('rest-modal-title').innerText = `Descanso: ${ex.name}`;
+            document.getElementById('custom-rest-seconds-input').value = ex.restTimer || 120;
+            document.getElementById('rest-picker-modal').classList.add('active');
+        }
+
+        function openChangeEditorRestTimerModal(idx) {
+            currentRestTargetType = 'editor';
+            currentRestTargetIndex = idx;
+            const ex = editingRoutineData[idx];
+            document.getElementById('rest-modal-title').innerText = `Descanso: ${ex.name}`;
+            document.getElementById('custom-rest-seconds-input').value = ex.restTimer || 120;
+            document.getElementById('rest-picker-modal').classList.add('active');
+        }
+
+        function closeRestPickerModal() {
+            document.getElementById('rest-picker-modal').classList.remove('active');
+        }
+
+        function setRestTimerValue(seconds) {
+            if (currentRestTargetType === 'workout' && currentRestTargetIndex !== null) {
+                currentWorkout[currentRestTargetIndex].restTimer = seconds;
+                isWorkoutModified = true;
+                localStorage.setItem('raw_gym_is_modified', 'true');
+                saveState();
+                renderWorkout();
+            } else if (currentRestTargetType === 'editor' && currentRestTargetIndex !== null) {
+                editingRoutineData[currentRestTargetIndex].restTimer = seconds;
+                renderEditorExercises();
+            }
+            closeRestPickerModal();
+        }
+
+        function selectPresetRest(seconds) {
+            setRestTimerValue(seconds);
+        }
+
+        function applyCustomRestInput() {
+            const val = parseInt(document.getElementById('custom-rest-seconds-input').value);
+            if (!isNaN(val) && val > 0) {
+                setRestTimerValue(val);
+            }
         }
 
         // CONTROL DEL MODAL DE CONFIGURACIÓN DE DISCOS Y CREDENCIALES GITHUB
@@ -896,7 +1024,6 @@
                 container.appendChild(label);
             });
 
-            // Cargar datos del Buzón desde localStorage al abrir
             document.getElementById('gh-user').value = localStorage.getItem('raw_gym_gh_user') || '';
             document.getElementById('gh-repo').value = localStorage.getItem('raw_gym_gh_repo') || '';
             document.getElementById('gh-token').value = localStorage.getItem('raw_gym_gh_token') || '';
@@ -905,7 +1032,6 @@
         }
 
         function closeConfigModal() {
-            // Guardar inputs del Buzón en localStorage al cerrar
             localStorage.setItem('raw_gym_gh_user', document.getElementById('gh-user').value.trim());
             localStorage.setItem('raw_gym_gh_repo', document.getElementById('gh-repo').value.trim());
             localStorage.setItem('raw_gym_gh_token', document.getElementById('gh-token').value.trim());
@@ -1007,7 +1133,10 @@
                 row.innerHTML = `
                     <div>
                         <span style="font-weight: 700; display: block;">${ex.name}</span>
-                        <span style="font-size: 0.75rem; color: var(--accent-green); font-weight: 600; text-transform: uppercase;">Objetivo: ${ex.targetReps || '8-10'} reps</span>
+                        <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                            <span style="font-size: 0.75rem; color: var(--accent-green); font-weight: 600; text-transform: uppercase;">Objetivo: ${ex.targetReps || '8-10'} reps</span>
+                            <div class="rest-timer-pill" onclick="openChangeEditorRestTimerModal(${idx})">⏱️ ${formatRestTime(ex.restTimer || 135)}</div>
+                        </div>
                     </div>
                     <button class="btn" style="color: var(--accent-red); border: none;" onclick="removeExerciseFromEditor(${idx})">❌</button>
                 `;
@@ -1016,17 +1145,18 @@
         }
 
         function openAddExerciceToTemplateModal() {
-            openCustomModal("Nombre del ejercicio", "Ej: Dominadas, Press...", function(name, muscle, equip, targetReps) {
+            openCustomModal("Nombre del ejercicio", "Ej: Dominadas, Press...", function(name, muscle, equip, targetReps, restTimer) {
                 editingRoutineData.push({
                     name: name,
                     muscle: muscle,
                     equipType: equip,
                     targetReps: targetReps,
+                    restTimer: restTimer || 135,
                     note: '',
                     sets: [{ weight: 0, reps: 0, completed: false, prev: '-', type: 'N' }]
                 });
                 renderEditorExercises();
-            }, true, true, true);
+            }, true, true, true, true);
         }
 
         function removeExerciseFromEditor(idx) {
@@ -1055,6 +1185,7 @@
                 const lastHistoryOfEx = findLastCompletedExerciseData(ex.name);
                 if (lastHistoryOfEx) {
                     const originalTarget = ex.targetReps;
+                    const originalRest = ex.restTimer;
                     ex.sets = lastHistoryOfEx.sets.map(s => ({
                         weight: s.weight,
                         reps: s.reps,
@@ -1063,6 +1194,7 @@
                         type: s.type || 'N'
                     }));
                     ex.targetReps = originalTarget;
+                    ex.restTimer = originalRest || ex.restTimer || 135;
                 }
             });
 
@@ -1192,14 +1324,19 @@
                     `;
                 });
 
-                const targetText = exercise.targetReps ? `<div style="margin-bottom: 8px;"><span style="font-size: 0.75rem; color: var(--accent-green); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">Objetivo: ${exercise.targetReps} reps</span></div>` : '';
+                const targetText = exercise.targetReps ? `<span style="font-size: 0.75rem; color: var(--accent-green); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">Objetivo: ${exercise.targetReps} reps</span>` : '';
 
                 card.innerHTML = `
                     <div class="exercise-header">
                         <span class="exercise-title">${exercise.name}</span>
                         <button class="btn" style="color:var(--accent-red); border:none;" onclick="deleteExercise(${exIndex})">❌</button>
                     </div>
-                    ${targetText}
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+                        ${targetText}
+                        <div class="rest-timer-pill" onclick="openChangeRestTimerModal(${exIndex})">
+                            <span>⏱️ Descanso: ${formatRestTime(exercise.restTimer || 135)}</span>
+                        </div>
+                    </div>
                     <input type="text" class="exercise-note-input" value="${exercise.note || ''}" placeholder="Añadir notas (ej: ángulo del banco, sensaciones...)" onchange="updateExerciseNote(${exIndex}, this.value)">
                     <table class="set-table">
                         <thead><tr><th>Tipo</th><th>Prev</th><th>kg</th><th>Reps</th><th>✓</th><th></th></tr></thead>
@@ -1251,12 +1388,13 @@
         }
 
         function toggleSetComplete(exIndex, setIndex) {
-            unlockAudio(); // Desbloqueo del canal de audio inmediatamente al interactuar
+            unlockAudio();
             const set = currentWorkout[exIndex].sets[setIndex];
             set.completed = !set.completed;
             if (set.completed) {
+                const restSecs = currentWorkout[exIndex].restTimer || 135;
                 toggleTimerFullscreen(true);
-                startFullscreenTimer(120);
+                startFullscreenTimer(restSecs);
             }
             saveState();
             renderWorkout();
@@ -1289,12 +1427,13 @@
         }
         
         function openAddExerciseSessionModal() {
-            openCustomModal("Añadir ejercicio a la sesión", "Ej: Curl de bíceps...", function(name, muscle, equip, targetReps) {
+            openCustomModal("Añadir ejercicio a la sesión", "Ej: Curl de bíceps...", function(name, muscle, equip, targetReps, restTimer) {
                 currentWorkout.push({
                     name: name,
                     muscle: muscle,
                     equipType: equip,
                     targetReps: targetReps,
+                    restTimer: restTimer || 135,
                     note: '',
                     sets: [{ weight: 0, reps: 0, completed: false, prev: "-", type: 'N' }]
                 });
@@ -1302,7 +1441,7 @@
                 localStorage.setItem('raw_gym_is_modified', 'true');
                 saveState();
                 renderWorkout();
-            }, true, true, true);
+            }, true, true, true, true);
         }
 
         function deleteExercise(exIndex) {
@@ -1419,6 +1558,7 @@
                                     const cleanTemplate = workoutToSaveAsTemplate.map(ex => ({
                                         name: ex.name,
                                         targetReps: ex.targetReps || '8-10',
+                                        restTimer: ex.restTimer || 135,
                                         equipType: ex.equipType || 'dumbbell',
                                         muscle: ex.muscle || 'Pecho',
                                         note: ex.note || '',
@@ -1442,6 +1582,7 @@
                                 const cleanTemplate = workoutToSaveAsTemplate.map(ex => ({
                                     name: ex.name,
                                     targetReps: ex.targetReps || '8-10',
+                                    restTimer: ex.restTimer || 135,
                                     equipType: ex.equipType || 'dumbbell',
                                     muscle: ex.muscle || 'Pecho',
                                     note: ex.note || '',
@@ -2037,7 +2178,8 @@
                     return '';
             }
         }
-        // --- SISTEMA DE COPIA DE SEGURIDAD OPTIMIZADO PARA PWA (PANTALLA DE INICIO) ---
+
+        // --- SISTEMA DE COPIA DE SEGURIDAD OPTIMIZADO PARA PWA ---
         function exportGymData() {
             const backupData = {
                 templates: JSON.parse(localStorage.getItem('raw_gym_templates') || '{}'),
@@ -2075,9 +2217,7 @@
                 downloadAnchor.click();
                 downloadAnchor.remove();
             } catch (downloadErr) {
-                console.error("Descarga bloqueada por el contenedor. Usando copia en portapapeles.");
-                alert("Tu dispositivo bloquea las descargas directas en la pantalla de inicio. Se copiarán los datos al portapapeles de tu móvil para que los pegues en una nota o mensaje.");
-                
+                alert("Tu dispositivo bloquea las descargas directas en la pantalla de inicio. Se copiarán los datos al portapapeles de tu móvil.");
                 navigator.clipboard.writeText(jsonString).then(() => {
                     alert("¡Copia de seguridad copiada al portapapeles con éxito!");
                 }).catch(err => {
@@ -2100,13 +2240,12 @@
             reader.onload = function(e) {
                 try {
                     const importedData = JSON.parse(e.target.result);
-                    
                     if (!importedData.templates || !importedData.history) {
-                        alert("Error: El archivo seleccionado no tiene el formato correcto de RAW TRACKER.");
+                        alert("Error: El archivo seleccionado no tiene el formato correcto.");
                         return;
                     }
 
-                    if (confirm("⚠️ ¿Estás seguro de que quieres importar estos datos? Esto borrará el historial y las plantillas actuales de este dispositivo.")) {
+                    if (confirm("⚠️ ¿Estás seguro de que quieres importar estos datos? Esto borrará el historial y las plantillas actuales.")) {
                         localStorage.setItem('raw_gym_templates', JSON.stringify(importedData.templates));
                         localStorage.setItem('raw_gym_history', JSON.stringify(importedData.history));
                         
@@ -2120,7 +2259,6 @@
                     }
                 } catch (err) {
                     alert("Error crítico al procesar el archivo. Asegúrate de que es un archivo .json válido.");
-                    console.error(err);
                 }
             };
             
@@ -2135,7 +2273,7 @@
         }
         renderWorkout();
 
-        // ==================== LÓGICA DEL TEMPORIZADOR MAXIMIZADO ====================
+        // ==================== LÓGICA DEL TEMPORIZADOR DE DESCANSO Y AUDIOS ====================
         let timerDuration = 120; 
         let timerSecondsLeft = 0;
         let timerInterval = null;
@@ -2156,7 +2294,7 @@
         document.addEventListener('click', unlockAudio, { passive: true });
         document.addEventListener('touchstart', unlockAudio, { passive: true });
 
-        // --- SONIDO DE ALARMA POTENCIADO PARA AURICULARES / MÚSICA ---
+        // SONIDO Y VIBRACIÓN OPTIMIZADOS
         function playTimerSound() {
             try {
                 unlockAudio();
@@ -2169,11 +2307,11 @@
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
                     
-                    osc.type = 'square'; // Sonido digital penetrante estilo cronómetro
+                    osc.type = 'square';
                     osc.frequency.setValueAtTime(freq, time);
                     
                     gain.gain.setValueAtTime(0, time);
-                    gain.gain.linearRampToValueAtTime(1.0, time + 0.01); // 100% de volumen
+                    gain.gain.linearRampToValueAtTime(1.0, time + 0.01);
                     gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
                     
                     osc.connect(gain);
@@ -2183,13 +2321,13 @@
                     osc.stop(time + duration);
                 };
 
-                // RÁFAGA 1
+                // Ráfaga 1
                 createBeep(now, 1240, 0.12);
                 createBeep(now + 0.15, 1240, 0.12);
                 createBeep(now + 0.30, 1240, 0.12);
                 createBeep(now + 0.45, 1560, 0.25);
 
-                // RÁFAGA 2 (Refuerzo tras 0.85s)
+                // Ráfaga 2
                 const secondBurst = now + 0.85;
                 createBeep(secondBurst, 1240, 0.12);
                 createBeep(secondBurst + 0.15, 1240, 0.12);
@@ -2206,7 +2344,7 @@
             if (show) {
                 overlay.style.display = 'flex';
                 if (timerSecondsLeft <= 0) {
-                    startFullscreenTimer(90); 
+                    startFullscreenTimer(135); 
                 } else {
                     updateFullscreenUI();
                 }
@@ -2304,7 +2442,7 @@
             updateFullscreenUI();
         }
 
-        function resetTimerFullscreen() { startFullscreenTimer(120); }
+        function resetTimerFullscreen() { startFullscreenTimer(135); }
 
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && timerInterval && !isTimerPaused) {
