@@ -1251,6 +1251,7 @@
         }
 
         function toggleSetComplete(exIndex, setIndex) {
+            unlockAudio(); // Desbloqueo del canal de audio inmediatamente al interactuar
             const set = currentWorkout[exIndex].sets[setIndex];
             set.completed = !set.completed;
             if (set.completed) {
@@ -2155,6 +2156,7 @@
         document.addEventListener('click', unlockAudio, { passive: true });
         document.addEventListener('touchstart', unlockAudio, { passive: true });
 
+        // --- SONIDO DE ALARMA POTENCIADO PARA AURICULARES / MÚSICA ---
         function playTimerSound() {
             try {
                 unlockAudio();
@@ -2163,29 +2165,37 @@
 
                 const now = audioCtx.currentTime;
 
-                const osc1 = audioCtx.createOscillator();
-                const gain1 = audioCtx.createGain();
-                osc1.type = 'triangle';
-                osc1.frequency.setValueAtTime(950, now);
-                gain1.gain.setValueAtTime(0, now);
-                gain1.gain.linearRampToValueAtTime(0.7, now + 0.02);
-                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-                osc1.connect(gain1);
-                gain1.connect(audioCtx.destination);
-                osc1.start(now);
-                osc1.stop(now + 0.16);
+                const createBeep = (time, freq, duration) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    
+                    osc.type = 'square'; // Sonido digital penetrante estilo cronómetro
+                    osc.frequency.setValueAtTime(freq, time);
+                    
+                    gain.gain.setValueAtTime(0, time);
+                    gain.gain.linearRampToValueAtTime(1.0, time + 0.01); // 100% de volumen
+                    gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    osc.start(time);
+                    osc.stop(time + duration);
+                };
 
-                const osc2 = audioCtx.createOscillator();
-                const gain2 = audioCtx.createGain();
-                osc2.type = 'triangle';
-                osc2.frequency.setValueAtTime(950, now + 0.25);
-                gain2.gain.setValueAtTime(0, now + 0.25);
-                gain2.gain.linearRampToValueAtTime(0.7, now + 0.27);
-                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-                osc2.connect(gain2);
-                gain2.connect(audioCtx.destination);
-                osc2.start(now + 0.25);
-                osc2.stop(now + 0.41);
+                // RÁFAGA 1
+                createBeep(now, 1240, 0.12);
+                createBeep(now + 0.15, 1240, 0.12);
+                createBeep(now + 0.30, 1240, 0.12);
+                createBeep(now + 0.45, 1560, 0.25);
+
+                // RÁFAGA 2 (Refuerzo tras 0.85s)
+                const secondBurst = now + 0.85;
+                createBeep(secondBurst, 1240, 0.12);
+                createBeep(secondBurst + 0.15, 1240, 0.12);
+                createBeep(secondBurst + 0.30, 1240, 0.12);
+                createBeep(secondBurst + 0.45, 1560, 0.35);
+
             } catch (e) {
                 console.error("Error al reproducir el sonido del temporizador:", e);
             }
@@ -2229,7 +2239,7 @@
                     if (timerSecondsLeft <= 0) {
                         clearInterval(timerInterval);
                         playTimerSound();
-                        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                        if (navigator.vibrate) navigator.vibrate([500, 100, 500, 100, 500, 100, 800]);
                         toggleTimerFullscreen(false);
                     }
                 }
@@ -2305,7 +2315,7 @@
                 if (timerSecondsLeft <= 0) {
                     clearInterval(timerInterval);
                     playTimerSound();
-                    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                    if (navigator.vibrate) navigator.vibrate([500, 100, 500, 100, 500, 100, 800]);
                     toggleTimerFullscreen(false);
                 }
             }
