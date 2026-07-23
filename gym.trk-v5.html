@@ -1146,7 +1146,6 @@
             switchView('edit-routine');
         }
 
-        // --- NUEVA FUNCIÓN: Reordenar en editor ---
         function moveEditorExercise(idx, direction) {
             const newIndex = idx + direction;
             if (newIndex < 0 || newIndex >= editingRoutineData.length) return;
@@ -1281,7 +1280,6 @@
             return null;
         }
 
-        // --- NUEVA FUNCIÓN: Reordenar en sesión activa ---
         function moveWorkoutExercise(exIndex, direction) {
             const newIndex = exIndex + direction;
             if (newIndex < 0 || newIndex >= currentWorkout.length) return;
@@ -2259,53 +2257,48 @@
             event.target.value = '';
         }
 
-        // --- MANEJO DE AUDIO ROBUSTO PARA PWA (STANDALONE iOS / Android) ---
-        let audioCtx = null;
-
+        // --- MANEJO DE AUDIO BLINDADO PARA SAFARI / PWA STANDALONE ---
         function unlockAudio() {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (!audioCtx && AudioContext) {
-                    audioCtx = new AudioContext();
-                }
-                if (audioCtx) {
-                    if (audioCtx.state === 'suspended') {
-                        audioCtx.resume();
+                if (AudioContext) {
+                    const tempCtx = new AudioContext();
+                    if (tempCtx.state === 'suspended') {
+                        tempCtx.resume();
                     }
-                    // Reproducir micro-pulso silencioso para enganchar el hardware de audio en modo standalone
-                    const buffer = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+                    const buffer = tempCtx.createBuffer(1, 1, tempCtx.sampleRate);
                     const channel = buffer.getChannelData(0);
                     channel[0] = 0;
-                    const dummySource = audioCtx.createBufferSource();
-                    dummySource.buffer = buffer;
-                    dummySource.connect(audioCtx.destination);
-                    dummySource.start(0);
+                    const dummy = tempCtx.createBufferSource();
+                    dummy.buffer = buffer;
+                    dummy.connect(tempCtx.destination);
+                    dummy.start(0);
                 }
             } catch (e) {
-                console.error("Error al desbloquear audio:", e);
+                console.error("Error desbloqueando audio:", e);
             }
         }
 
-        document.addEventListener('click', unlockAudio, { passive: true, capture: true });
-        document.addEventListener('touchstart', unlockAudio, { passive: true, capture: true });
-        document.addEventListener('touchend', unlockAudio, { passive: true, capture: true });
+        // Registrar cualquier toque o clic en la interfaz para mantener el audio activo en iOS
+        ['click', 'touchstart', 'touchend', 'mousedown'].forEach(eventType => {
+            document.addEventListener(eventType, unlockAudio, { passive: true, capture: true });
+        });
 
         function playTimerSound() {
             try {
-                unlockAudio();
-                if (!audioCtx) {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    if (AudioContext) audioCtx = new AudioContext();
-                }
-                if (audioCtx && audioCtx.state === 'suspended') {
-                    audioCtx.resume();
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                
+                const ctx = new AudioContext();
+                if (ctx.state === 'suspended') {
+                    ctx.resume();
                 }
 
-                const now = audioCtx.currentTime;
+                const now = ctx.currentTime;
 
                 const createBeep = (time, freq, duration) => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
                     
                     osc.type = 'square';
                     osc.frequency.setValueAtTime(freq, time);
@@ -2315,7 +2308,7 @@
                     gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
                     
                     osc.connect(gain);
-                    gain.connect(audioCtx.destination);
+                    gain.connect(ctx.destination);
                     
                     osc.start(time);
                     osc.stop(time + duration);
@@ -2333,7 +2326,7 @@
                 createBeep(secondBurst + 0.45, 1560, 0.35);
 
             } catch (e) {
-                console.error("Error reproduciendo alarma:", e);
+                console.error("Error reproduciendo alarma de fin de descanso:", e);
             }
         }
 
