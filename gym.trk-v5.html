@@ -12,7 +12,6 @@
     <style>
         /* ----------------HOJA DE ESTILOS CSS PRINCIPAL------------- */
 
-        /* <-----variables del tema visual y paleta de colores---------- */
         :root {
             --bg-main: #0a0a0a;
             --bg-card: #141414;
@@ -27,7 +26,6 @@
             --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        /* <-----bloqueo de gestos parasitos y scroll en ios---------- */
         html, body {
             background-color: var(--bg-main);
             color: var(--text-primary);
@@ -38,24 +36,21 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* <-----reseteo global de margenes y comportamiento de toques---------- */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: var(--font-stack);
             -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation; /* Deshabilita el zoom por doble toque en iOS */
+            touch-action: manipulation;
         }
 
-        /* <-----layout base del cuerpo y adaptacion a isla dinamica---------- */
         body {
             padding: 16px;
-            padding-top: calc(16px + env(safe-area-inset-top)); /* Empuja el contenido hacia abajo de forma dinámica evitando la Isla Dinámica */
+            padding-top: calc(16px + env(safe-area-inset-top));
             padding-bottom: 160px;
         }
 
-        /* <-----encabezados y jerarquia de titulos---------- */
         header {
             display: flex;
             justify-content: space-between;
@@ -81,7 +76,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* <-----gestion de visibilidad de vistas---------- */
         .view {
             display: none;
         }
@@ -90,7 +84,6 @@
             display: block;
         }
 
-        /* <-----botones generales y de accion---------- */
         .btn {
             background: var(--bg-card);
             color: var(--text-primary);
@@ -119,7 +112,6 @@
             margin-top: 8px;
         }
 
-        /* <-----pill de temporizador de descanso estilo strong---------- */
         .rest-timer-pill {
             display: inline-flex;
             align-items: center;
@@ -139,7 +131,6 @@
             background: var(--border-color);
         }
 
-        /* <-----barra de navegacion inferior fija---------- */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -173,7 +164,6 @@
             border-bottom: 2px solid var(--text-primary);
         }
 
-        /* <-----barra flotante del temporizador de descanso---------- */
         .timer-bar {
             position: fixed;
             bottom: 60px;
@@ -190,7 +180,6 @@
             user-select: none;
         }
 
-        /* <-----tarjetas de ejercicios y tablas de series---------- */
         .exercise-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -251,7 +240,6 @@
             background: rgba(48, 209, 88, 0.05);
         }
 
-        /* <-----campos de entrada de texto y numeros---------- */
         input[type="number"], input[type="text"], input[type="password"] {
             width: 100%;
             background: var(--bg-input);
@@ -269,7 +257,6 @@
             text-align: center;
         }
 
-        /* <-----boton de marcacion de serie completada---------- */
         .check-btn {
             width: 34px;
             height: 34px;
@@ -289,7 +276,6 @@
             color: var(--bg-main);
         }
 
-        /* <-----insignias para tipos de serie (n, c, f, d)---------- */
         .set-type-badge {
             display: inline-block;
             width: 28px;
@@ -318,7 +304,6 @@
             font-size: 0.8rem;
         }
 
-        /* <-----listas del historial y elementos de graficos---------- */
         .history-item {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -344,11 +329,10 @@
         }
 
         .editor-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            margin-bottom: 10px;
         }
 
         .chart-list-item {
@@ -376,7 +360,6 @@
             margin-bottom: 16px;
         }
 
-        /* <-----ventanas modales y capas superpuestas---------- */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -424,7 +407,6 @@
             text-align: center;
         }
         
-        /* <-----temporizador maximizado a pantalla completa---------- */
         .fullscreen-overlay {
             position: fixed;
             top: 0;
@@ -644,8 +626,7 @@
                 </div>
                 <div id="acc-disks-body" class="accordion-body" style="display: none; padding: 12px; border-top: 1px solid var(--border-color); background: var(--bg-card);">
                     <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase;">Selecciona los discos disponibles (de menor a mayor peso):</p>
-                    <div style="display: flex; flex-direction: column; gap: 8px;" id="config-disks-checkboxes">
-                        </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;" id="config-disks-checkboxes"></div>
                 </div>
             </div>
 
@@ -818,9 +799,6 @@
     </nav>
 
     <script>
-        //----------------INICIALIZACIÓN Y VARIABLES GLOBALES-------------
-        // Push, Pull y Upper -> 2 min 15 seg (135s)
-        // Legs y Lower -> 3 min (180s)
         const defaultTemplates = {
             'Push': [
                 { name: 'Press banca inclinado', muscle: 'Pecho', targetReps: '6-8', restTimer: 135, equipType: 'smith', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
@@ -869,13 +847,7 @@
         let history = [];
 
         const defaultAvailableDisks = {
-            "25": true,
-            "20": true,
-            "15": true,
-            "10": true,
-            "5": true,
-            "2.5": true,
-            "1.25": true
+            "25": true, "20": true, "15": true, "10": true, "5": true, "2.5": true, "1.25": true
         };
         let availableDisks = JSON.parse(localStorage.getItem('raw_gym_available_disks')) || defaultAvailableDisks;
 
@@ -886,7 +858,6 @@
         let editingRoutineKey = null;
         let editingRoutineData = null;
 
-        //<-----formatresttime: convierte segundos a texto legible estilo 2m 15s----------
         function formatRestTime(secs) {
             if (!secs || secs <= 0) secs = 120;
             const m = Math.floor(secs / 60);
@@ -894,9 +865,6 @@
             return s > 0 ? `${m}m ${s}s` : `${m}m`;
         }
 
-        //----------------CONFIGURACIÓN DE DISCOS Y GITHUB-------------
-
-        //<-----toggleconfigaccordion: controla el comportamiento de acordeón estricto (opcion B)----------
         function toggleConfigAccordion(section) {
             const disksBody = document.getElementById('acc-disks-body');
             const disksArrow = document.getElementById('acc-disks-arrow');
@@ -928,9 +896,7 @@
             }
         }
 
-        //<-----openconfigmodal: abre la ventana de ajustes con los acordeones cerrados por defecto----------
         function openConfigModal() {
-            // Cierre inicial de ambos acordeones por defecto
             document.getElementById('acc-disks-body').style.display = 'none';
             document.getElementById('acc-disks-arrow').innerText = '▶';
             document.getElementById('acc-github-body').style.display = 'none';
@@ -938,8 +904,6 @@
 
             const container = document.getElementById('config-disks-checkboxes');
             container.innerHTML = '';
-            
-            // Discos ordenados de menor a mayor peso
             const orderedDiskSizes = ["1.25", "2.5", "5", "10", "15", "20", "25"];
 
             orderedDiskSizes.forEach(size => {
@@ -954,13 +918,13 @@
                 label.style.fontWeight = '600';
                 
                 let dotColor = '#ffffff';
-                if (size === '1.25') dotColor = '#bf5af2';      // Morado
-                else if (size === '2.5') dotColor = '#ffd60a';  // Dorado
-                else if (size === '5') dotColor = '#ffffff';    // Blanco
-                else if (size === '10') dotColor = 'var(--accent-green)'; // Verde
-                else if (size === '15') dotColor = 'var(--accent-yellow)'; // Amarillo
-                else if (size === '20') dotColor = 'var(--accent-blue)';   // Azul
-                else if (size === '25') dotColor = 'var(--accent-red)';    // Rojo
+                if (size === '1.25') dotColor = '#bf5af2';
+                else if (size === '2.5') dotColor = '#ffd60a';
+                else if (size === '5') dotColor = '#ffffff';
+                else if (size === '10') dotColor = 'var(--accent-green)';
+                else if (size === '15') dotColor = 'var(--accent-yellow)';
+                else if (size === '20') dotColor = 'var(--accent-blue)';
+                else if (size === '25') dotColor = 'var(--accent-red)';
 
                 label.innerHTML = `
                     <input type="checkbox" value="${size}" ${availableDisks[size] ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: var(--accent-green);">
@@ -983,7 +947,6 @@
             document.getElementById('config-modal').classList.add('active');
         }
 
-        //<-----closeconfigmodal: guarda los datos del buzón de github y cierra el modal----------
         function closeConfigModal() {
             localStorage.setItem('raw_gym_gh_user', document.getElementById('gh-user').value.trim());
             localStorage.setItem('raw_gym_gh_repo', document.getElementById('gh-repo').value.trim());
@@ -993,9 +956,6 @@
             if (currentWorkout) renderWorkout();
         }
 
-        //----------------MODALES Y NAVEGACIÓN GENERAL-------------
-
-        //<-----switchview: cambia entre las pestañas principales de la app----------
         function switchView(viewId, buttonElement) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(`view-${viewId}`).classList.add('active');
@@ -1013,7 +973,6 @@
             }
         }
 
-        //<-----opencustommodal: abre el modal multiusos para entrada de datos----------
         function openCustomModal(title, placeholder, onConfirm, showMuscleSelect = false, showEquipSelect = false, showTargetReps = false, showRestTimer = false) {
             document.getElementById('modal-title').innerText = title;
             const input = document.getElementById('modal-input');
@@ -1071,7 +1030,6 @@
             };
         }
 
-        //<-----closecustommodal: cierra el modal multiusos----------
         function closeCustomModal() {
             document.getElementById('custom-modal').classList.remove('active');
         }
@@ -1079,7 +1037,6 @@
         let currentRestTargetType = null; 
         let currentRestTargetIndex = null;
 
-        //<-----openchangeresttimermodal: abre el selector de descanso en la sesión activa----------
         function openChangeRestTimerModal(exIndex) {
             currentRestTargetType = 'workout';
             currentRestTargetIndex = exIndex;
@@ -1089,7 +1046,6 @@
             document.getElementById('rest-picker-modal').classList.add('active');
         }
 
-        //<-----openchangeeditorresttimermodal: abre el selector de descanso en el editor----------
         function openChangeEditorRestTimerModal(idx) {
             currentRestTargetType = 'editor';
             currentRestTargetIndex = idx;
@@ -1099,12 +1055,10 @@
             document.getElementById('rest-picker-modal').classList.add('active');
         }
 
-        //<-----closerestpickermodal: cierra el selector de descanso estilo Strong----------
         function closeRestPickerModal() {
             document.getElementById('rest-picker-modal').classList.remove('active');
         }
 
-        //<-----setresttimervalue: aplica el tiempo de descanso al ejercicio seleccionado----------
         function setRestTimerValue(seconds) {
             if (currentRestTargetType === 'workout' && currentRestTargetIndex !== null) {
                 currentWorkout[currentRestTargetIndex].restTimer = seconds;
@@ -1119,12 +1073,10 @@
             closeRestPickerModal();
         }
 
-        //<-----selectpresetrest: selecciona un preset de tiempo de descanso rápido----------
         function selectPresetRest(seconds) {
             setRestTimerValue(seconds);
         }
 
-        //<-----applycustomrestinput: aplica el tiempo introducido manualmente en segundos----------
         function applyCustomRestInput() {
             const val = parseInt(document.getElementById('custom-rest-seconds-input').value);
             if (!isNaN(val) && val > 0) {
@@ -1132,9 +1084,6 @@
             }
         }
 
-        //----------------GESTIÓN DE RUTINAS Y PLANTILLAS-------------
-
-        //<-----renderroutines: dibuja las tarjetas de plantillas en la pestaña Rutinas----------
         function renderRoutines() {
             const list = document.getElementById('routines-list');
             list.innerHTML = '';
@@ -1170,7 +1119,6 @@
             });
         }
 
-        //<-----opencreateroutinemodal: pide el nombre de la nueva rutina a crear----------
         function openCreateRoutineModal() {
             openCustomModal("Nombre de la nueva rutina", "Ej: Tirón, Pierna...", function(name) {
                 if (templates[name]) return;
@@ -1181,7 +1129,6 @@
             });
         }
 
-        //<-----openroutineeditor: abre la vista de edición para modificar una plantilla----------
         function openRoutineEditor(key) {
             editingRoutineKey = key;
             editingRoutineData = JSON.parse(JSON.stringify(templates[key]));
@@ -1199,7 +1146,15 @@
             switchView('edit-routine');
         }
 
-        //<-----rendereditorexercises: dibuja los ejercicios que componen la plantilla en edición----------
+        // --- NUEVA FUNCIÓN: Reordenar en editor ---
+        function moveEditorExercise(idx, direction) {
+            const newIndex = idx + direction;
+            if (newIndex < 0 || newIndex >= editingRoutineData.length) return;
+            const item = editingRoutineData.splice(idx, 1)[0];
+            editingRoutineData.splice(newIndex, 0, item);
+            renderEditorExercises();
+        }
+
         function renderEditorExercises() {
             const container = document.getElementById('edit-routine-exercises');
             container.innerHTML = '';
@@ -1211,20 +1166,23 @@
                 const row = document.createElement('div');
                 row.className = 'editor-row';
                 row.innerHTML = `
-                    <div>
-                        <span style="font-weight: 700; display: block;">${ex.name}</span>
-                        <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
-                            <span style="font-size: 0.75rem; color: var(--accent-green); font-weight: 600; text-transform: uppercase;">Objetivo: ${ex.targetReps || '8-10'} reps</span>
-                            <div class="rest-timer-pill" onclick="openChangeEditorRestTimerModal(${idx})">⏱️ ${formatRestTime(ex.restTimer || 135)}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <span style="font-weight: 700; font-size: 1rem;">${ex.name}</span>
+                        <div style="display: flex; gap: 4px;">
+                            <button class="btn" style="padding: 2px 6px; font-size: 0.75rem;" ${idx === 0 ? 'disabled style="opacity: 0.3;"' : ''} onclick="moveEditorExercise(${idx}, -1)">▲</button>
+                            <button class="btn" style="padding: 2px 6px; font-size: 0.75rem;" ${idx === editingRoutineData.length - 1 ? 'disabled style="opacity: 0.3;"' : ''} onclick="moveEditorExercise(${idx}, 1)">▼</button>
+                            <button class="btn" style="color: var(--accent-red); border: none; padding: 2px 6px;" onclick="removeExerciseFromEditor(${idx})">❌</button>
                         </div>
                     </div>
-                    <button class="btn" style="color: var(--accent-red); border: none;" onclick="removeExerciseFromEditor(${idx})">❌</button>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span style="font-size: 0.75rem; color: var(--accent-green); font-weight: 600; text-transform: uppercase;">Objetivo: ${ex.targetReps || '8-10'} reps</span>
+                        <div class="rest-timer-pill" onclick="openChangeEditorRestTimerModal(${idx})">⏱️ ${formatRestTime(ex.restTimer || 135)}</div>
+                    </div>
                 `;
                 container.appendChild(row);
             });
         }
 
-        //<-----openaddexercicetotemplatemodal: abre el formulario para añadir ejercicio a la plantilla----------
         function openAddExerciceToTemplateModal() {
             openCustomModal("Nombre del ejercicio", "Ej: Dominadas, Press...", function(name, muscle, equip, targetReps, restTimer) {
                 editingRoutineData.push({
@@ -1240,13 +1198,11 @@
             }, true, true, true, true);
         }
 
-        //<-----removeexercisefromeditor: elimina un ejercicio de la lista en edición----------
         function removeExerciseFromEditor(idx) {
             editingRoutineData.splice(idx, 1);
             renderEditorExercises();
         }
 
-        //<-----saveroutineeditor: guarda la plantilla editada en localStorage----------
         function saveRoutineEditor() {
             const newName = document.getElementById('edit-routine-name-input').value.trim();
             if (!newName) return;
@@ -1256,12 +1212,8 @@
             switchView('routines');
         }
 
-        //<-----cancelroutineeditor: descarta los cambios del editor de plantillas----------
         function cancelRoutineEditor() { switchView('routines'); }
 
-        //----------------ENTRENAMIENTO ACTIVO Y SESIÓN-------------
-
-        //<-----startroutine: arranca un entrenamiento activo usando una plantilla----------
         function startRoutine(key) {
             if (currentWorkout && !confirm("¿Cambiar de rutina? Se perderá el progreso actual.")) return;
             currentWorkoutName = key;
@@ -1300,7 +1252,6 @@
             switchView('train', document.querySelectorAll('.nav-item')[0]);
         }
 
-        //<-----startemptyworkout: inicia una sesión en blanco para entrenar libremente----------
         function startEmptyWorkout() {
             if (currentWorkout && !confirm("¿Cambiar de rutina? Se perderá el progreso actual.")) return;
             currentWorkoutName = "Personalizada";
@@ -1322,7 +1273,6 @@
             switchView('train', document.querySelectorAll('.nav-item')[0]);
         }
 
-        //<-----findlastcompletedexercisedata: busca el último peso y reps registrados para ese ejercicio----------
         function findLastCompletedExerciseData(exerciseName) {
             for (let session of history) {
                 const found = session.exercises.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
@@ -1331,7 +1281,18 @@
             return null;
         }
 
-        //<-----renderworkout: dibuja las tarjetas de ejercicios de la sesión activa----------
+        // --- NUEVA FUNCIÓN: Reordenar en sesión activa ---
+        function moveWorkoutExercise(exIndex, direction) {
+            const newIndex = exIndex + direction;
+            if (newIndex < 0 || newIndex >= currentWorkout.length) return;
+            const item = currentWorkout.splice(exIndex, 1)[0];
+            currentWorkout.splice(newIndex, 0, item);
+            isWorkoutModified = true;
+            localStorage.setItem('raw_gym_is_modified', 'true');
+            saveState();
+            renderWorkout();
+        }
+
         function renderWorkout() {
             const container = document.getElementById('workout-container');
             container.innerHTML = '';
@@ -1418,7 +1379,11 @@
                 card.innerHTML = `
                     <div class="exercise-header">
                         <span class="exercise-title">${exercise.name}</span>
-                        <button class="btn" style="color:var(--accent-red); border:none;" onclick="deleteExercise(${exIndex})">❌</button>
+                        <div style="display: flex; gap: 4px; align-items: center;">
+                            <button class="btn" style="padding: 2px 6px; font-size: 0.75rem;" ${exIndex === 0 ? 'disabled style="opacity: 0.3;"' : ''} onclick="moveWorkoutExercise(${exIndex}, -1)">▲</button>
+                            <button class="btn" style="padding: 2px 6px; font-size: 0.75rem;" ${exIndex === currentWorkout.length - 1 ? 'disabled style="opacity: 0.3;"' : ''} onclick="moveWorkoutExercise(${exIndex}, 1)">▼</button>
+                            <button class="btn" style="color:var(--accent-red); border:none; padding: 2px 4px;" onclick="deleteExercise(${exIndex})">❌</button>
+                        </div>
                     </div>
                     <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
                         ${targetText}
@@ -1437,13 +1402,11 @@
             });
         }
 
-        //<-----updatesetdata: actualiza los valores de una serie en memoria----------
         function updateSetData(exIndex, setIndex, field, value) {
             currentWorkout[exIndex].sets[setIndex][field] = parseFloat(value) || 0;
             saveState();
         }
 
-        //<-----updatesetweightrealtime: recalcula el desglose de discos al escribir el peso----------
         function updateSetWeightRealtime(exIndex, setIndex, value) {
             let val = parseFloat(value) || 0;
             currentWorkout[exIndex].sets[setIndex].weight = val;
@@ -1455,7 +1418,6 @@
             }
         }
 
-        //<-----updateexercisenote: guarda notas específicas del ejercicio----------
         function updateExerciseNote(exIndex, text) {
             currentWorkout[exIndex].note = text;
             if (currentWorkoutName && templates[currentWorkoutName]) {
@@ -1469,8 +1431,8 @@
             saveState();
         }
 
-        //<-----cyclesettype: rota entre los tipos de serie: N, C, F, D----------
         function cycleSetType(exIndex, setIndex) {
+            unlockAudio();
             const set = currentWorkout[exIndex].sets[setIndex];
             const states = ['N', 'C', 'F', 'D'];
             let nextIndex = (states.indexOf(set.type || 'N') + 1) % states.length;
@@ -1479,7 +1441,6 @@
             renderWorkout();
         }
 
-        //<-----togglesetcomplete: marca la serie y activa el temporizador de descanso exacto----------
         function toggleSetComplete(exIndex, setIndex) {
             unlockAudio();
             const set = currentWorkout[exIndex].sets[setIndex];
@@ -1493,8 +1454,8 @@
             renderWorkout();
         }
 
-        //<-----addset: añade una serie vacía duplicando los datos de la anterior----------
         function addSet(exIndex) {
+            unlockAudio();
             const sets = currentWorkout[exIndex].sets;
             const lastSet = sets[sets.length - 1] || { weight: 0, reps: 0, type: 'N' };
             sets.push({
@@ -1510,7 +1471,6 @@
             renderWorkout();
         }
 
-        //<-----deleteset: elimina una serie del ejercicio----------
         function deleteSet(exIndex, setIndex) {
             if (confirm(`¿Eliminar la serie ${setIndex + 1}?`)) {
                 currentWorkout[exIndex].sets.splice(setIndex, 1);
@@ -1521,7 +1481,6 @@
             }
         }
         
-        //<-----openaddexercisesessionmodal: añade un nuevo ejercicio a la sesión en vivo----------
         function openAddExerciseSessionModal() {
             openCustomModal("Añadir ejercicio a la sesión", "Ej: Curl de bíceps...", function(name, muscle, equip, targetReps, restTimer) {
                 currentWorkout.push({
@@ -1540,7 +1499,6 @@
             }, true, true, true, true);
         }
 
-        //<-----deleteexercise: elimina un ejercicio entero de la sesión activa----------
         function deleteExercise(exIndex) {
             if(confirm("¿Eliminar ejercicio?")) {
                 currentWorkout.splice(exIndex, 1);
@@ -1551,7 +1509,6 @@
             }
         }
 
-        //<-----cancelworkout: cancela y borra todo el progreso de la sesión actual----------
         function cancelWorkout() {
             if (confirm("⚠️ ¿Estás seguro de que quieres cancelar el entrenamiento? Se perderá todo el progreso de la sesión activa de hoy.")) {
                 clearInterval(workoutTimerInterval);
@@ -1570,7 +1527,6 @@
             }
         }
 
-        //<-----finishworkout: finaliza la sesión, la guarda en el historial y activa el auto-sync de github----------
         function finishWorkout() {
             if(confirm("¿Guardar entrenamiento?")) {
                 const now = new Date();
@@ -1678,18 +1634,12 @@
             }
         }
 
-        //----------------BUZÓN ASÍNCRONO DE GITHUB-------------
-
-        //<-----sendtogithubmailbox: realiza la subida asíncrona mediante la API de GitHub REST----------
         async function sendToGitHubMailbox(workoutData) {
             const user = localStorage.getItem('raw_gym_gh_user');
             const repo = localStorage.getItem('raw_gym_gh_repo');
             const token = localStorage.getItem('raw_gym_gh_token');
 
-            if (!user || !repo || !token) {
-                console.log("Buzón de GitHub no configurado por completo. Datos respaldados únicamente de manera local.");
-                return;
-            }
+            if (!user || !repo || !token) return;
 
             const timestamp = workoutData.timestamp || Date.now();
             const filename = `workout_${timestamp}.json`;
@@ -1704,7 +1654,7 @@
                     content: base64Content
                 };
 
-                const response = await fetch(url, {
+                await fetch(url, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `token ${token}`,
@@ -1713,23 +1663,13 @@
                     },
                     body: JSON.stringify(payload)
                 });
-
-                if (response.ok) {
-                    console.log(`✅ Entrenamiento volcado con éxito al buzón: mailbox/${filename}`);
-                } else {
-                    const errorData = await response.json();
-                    console.error("❌ Error de comunicación con la API de GitHub:", errorData.message);
-                }
             } catch (error) {
-                console.error("🚨 Error crítico de red al conectar con GitHub Mailbox:", error);
+                console.error("Error GitHub Mailbox:", error);
             }
         }
 
-        //----------------HISTORIAL Y CALENDARIO INTERACTIVO-------------
-
         let currentCalendarDate = new Date(); 
 
-        //<-----renderhistory: renderiza la cuadrícula mensual e indica los días entrenados----------
         function renderHistory() {
             const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
             const year = currentCalendarDate.getFullYear();
@@ -1824,13 +1764,11 @@
             }
         }
 
-        //<-----changecalendarmonth: navega entre los meses del calendario----------
         function changeCalendarMonth(offset) {
             currentCalendarDate.setMonth(currentCalendarDate.getMonth() + offset);
             renderHistory();
         }
 
-        //<-----showdayworkouts: muestra el desglose del entrenamiento en la fecha pulsada----------
         function showDayWorkouts(day, dayWorkouts, isDefaultToday = false) {
             const container = document.getElementById('calendar-day-details');
             if (!container) return;
@@ -1897,7 +1835,6 @@
             });
         }
 
-        //<-----deletehistoryitem: elimina una entrada del historial de entrenamientos----------
         function deleteHistoryItem(idx) {
             if (confirm("¿Borrar este entrenamiento del historial?")) {
                 history.splice(idx, 1);
@@ -1906,9 +1843,6 @@
             }
         }
 
-        //----------------GRÁFICOS Y ESTADÍSTICAS DE EVOLUCIÓN-------------
-
-        //<-----renderchartsexerciselist: genera la lista de ejercicios para inspeccionar gráficas----------
         function renderChartsExerciseList() {
             const listContainer = document.getElementById('chart-exercises-list');
             listContainer.innerHTML = '';
@@ -1932,12 +1866,10 @@
             });
         }
 
-        //<-----closeactivecharts: oculta las gráficas de evolución activa----------
         function closeActiveCharts() {
             document.getElementById('active-charts-display').style.display = 'none';
         }
 
-        //<-----showexercisecharts: procesa los máximos del mes y año para dibujar SVG----------
         function showExerciseCharts(exerciseName) {
             document.getElementById('active-charts-display').style.display = 'block';
             document.getElementById('active-chart-title').innerText = exerciseName;
@@ -1989,7 +1921,6 @@
             document.getElementById('active-charts-display').scrollIntoView({ behavior: 'smooth' });
         }
 
-        //<-----buildsinglesvgchart: genera el código vectorial SVG dinámico de la gráfica----------
         function buildSingleSvgChart(containerId, points) {
             const container = document.getElementById(containerId);
             if (points.length === 0) {
@@ -2046,7 +1977,6 @@
             container.innerHTML = svgHtml;
         }
 
-        //<-----renderweeklymusclevolume: genera la gráfica de volumen de series acumuladas por músculo----------
         function renderWeeklyMuscleVolume() {
             const container = document.getElementById('muscle-volume-chart-container');
             if (!container) return;
@@ -2115,25 +2045,16 @@
             container.innerHTML = svgHtml;
         }
 
-        //----------------ALGORITMO DE DISTRIBUCIÓN DE DISCOS-------------
-
-        //<-----getmindisks: calcula la combinación con el menor número de discos por lado----------
         function getMinDisks(target) {
             let t = Math.round(target * 100);
             if (t < 0 || t % 125 !== 0) return null; 
             
             const allDisks = [
-                { val: 2500, str: "25" },
-                { val: 2000, str: "20" },
-                { val: 1500, str: "15" },
-                { val: 1000, str: "10" },
-                { val: 500,  str: "5" },
-                { val: 250,  str: "2.5" },
-                { val: 125,  str: "1.25" }
+                { val: 2500, str: "25" }, { val: 2000, str: "20" }, { val: 1500, str: "15" },
+                { val: 1000, str: "10" }, { val: 500,  str: "5" }, { val: 250,  str: "2.5" }, { val: 125,  str: "1.25" }
             ];
 
             const activeDisks = allDisks.filter(d => availableDisks[d.str]);
-            
             let dp = new Array(t + 1).fill(Infinity);
             let parent = new Array(t + 1).fill(-1);
             dp[0] = 0;
@@ -2160,13 +2081,11 @@
             return result.sort((a,b) => parseFloat(b) - parseFloat(a));
         }
 
-        //<-----getdiskscombination: mapea los colores oficiales de cada disco en HTML----------
         function getDisksCombination(totalWeight, baseWeight) {
             let netWeight = totalWeight - baseWeight;
             if (netWeight < 0) return '<span style="color: var(--accent-red);">⚠️ &lt; bar</span>';
             
             let targetPerSide = netWeight / 2;
-            
             let totalCents = Math.round(totalWeight * 100);
             let baseCents = Math.round(baseWeight * 100);
             if ((totalCents - baseCents) % 250 !== 0) {
@@ -2191,8 +2110,8 @@
                 else if (d === '15') color = 'var(--accent-yellow)';   
                 else if (d === '10') color = 'var(--accent-green)';    
                 else if (d === '5') color = '#ffffff';                 
-                else if (d === '2.5') color = '#ffd60a'; // Dorado             
-                else if (d === '1.25') color = '#bf5af2'; // Morado              
+                else if (d === '2.5') color = '#ffd60a';             
+                else if (d === '1.25') color = '#bf5af2';              
                 return `<span style="color: ${color};">${displayVal}</span>`;
             });
             
@@ -2211,7 +2130,6 @@
             }
         }
 
-        //<-----calculateweighthelper: determina qué asistente de carga mostrar según equipamiento----------
         function calculateWeightHelper(weight, equipType) {
             if (!weight || weight <= 0) return '';
             
@@ -2235,18 +2153,13 @@
             }
         }
 
-        //----------------PERSISTENCIA Y COPIAS DE SEGURIDAD-------------
-
-        //<-----savetemplates: guarda la estructura de plantillas en localstorage----------
         function saveTemplates() { localStorage.setItem('raw_gym_templates', JSON.stringify(templates)); }
 
-        //<-----savestate: guarda el estado actual del entrenamiento activo----------
         function saveState() {
             localStorage.setItem('raw_gym_current_workout', JSON.stringify(currentWorkout));
             localStorage.setItem('raw_gym_current_name', currentWorkoutName);
         }
 
-        //<-----loadstate: recupera toda la información almacenada en el dispositivo----------
         function loadState() {
             const savedTemplates = localStorage.getItem('raw_gym_templates');
             if (savedTemplates) {
@@ -2268,7 +2181,6 @@
             if (savedModified) isWorkoutModified = (savedModified === 'true');
         }
 
-        //<-----exportgymdata: genera el respaldo en JSON o lo copia al portapapeles----------
         function exportGymData() {
             const backupData = {
                 templates: JSON.parse(localStorage.getItem('raw_gym_templates') || '{}'),
@@ -2289,11 +2201,11 @@
                             files: [file],
                             title: 'RAW Tracker Backup',
                             text: 'Copia de seguridad de mis entrenamientos'
-                        }).catch(err => console.log('Compartido cancelado o fallido', err));
+                        }).catch(err => console.log('Compartido cancelado', err));
                         return;
                     }
                 } catch (shareErr) {
-                    console.error("Error al intentar compartir archivo nativo:", shareErr);
+                    console.error("Error share:", shareErr);
                 }
             }
 
@@ -2306,23 +2218,15 @@
                 downloadAnchor.click();
                 downloadAnchor.remove();
             } catch (downloadErr) {
-                alert("Tu dispositivo bloquea las descargas directas en la pantalla de inicio. Se copiarán los datos al portapapeles de tu móvil.");
-                navigator.clipboard.writeText(jsonString).then(() => {
-                    alert("¡Copia de seguridad copiada al portapapeles con éxito!");
-                }).catch(err => {
-                    openCustomModal("Copia de seguridad manual", "Copia todo el texto de abajo", function(){}, false, false);
-                    document.getElementById('modal-input').value = jsonString;
-                    document.getElementById('modal-input').select();
-                });
+                alert("Copiando datos al portapapeles...");
+                navigator.clipboard.writeText(jsonString);
             }
         }
 
-        //<-----triggerimportfileinput: lanza el selector nativo de archivos .json----------
         function triggerImportFileInput() {
             document.getElementById('import-file-input').click();
         }
 
-        //<-----importgymdata: procesa e importa una copia de seguridad válida----------
         function importGymData(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -2332,11 +2236,11 @@
                 try {
                     const importedData = JSON.parse(e.target.result);
                     if (!importedData.templates || !importedData.history) {
-                        alert("Error: El archivo seleccionado no tiene el formato correcto.");
+                        alert("Error: Archivo no válido.");
                         return;
                     }
 
-                    if (confirm("⚠️ ¿Estás seguro de que quieres importar estos datos? Esto borrará el historial y las plantillas actuales.")) {
+                    if (confirm("⚠️ ¿Importar datos? Se sobrescribirán tus plantillas actuales.")) {
                         localStorage.setItem('raw_gym_templates', JSON.stringify(importedData.templates));
                         localStorage.setItem('raw_gym_history', JSON.stringify(importedData.history));
                         
@@ -2345,47 +2249,57 @@
                         renderHistory();
                         renderWeeklyMuscleVolume();
                         renderWorkout();
-                        
-                        alert("¡Datos importados con éxito! Tu progreso se ha restaurado.");
+                        alert("¡Datos importados con éxito!");
                     }
                 } catch (err) {
-                    alert("Error crítico al procesar el archivo. Asegúrate de que es un archivo .json válido.");
+                    alert("Error procesando el archivo JSON.");
                 }
             };
-            
             reader.readAsText(file);
             event.target.value = '';
         }
 
-        //----------------TEMPORIZADOR Y AUDIO DE ALARMA-------------
-
-        let timerDuration = 120; 
-        let timerSecondsLeft = 0;
-        let timerInterval = null;
-        let isTimerPaused = false;
-        let timerEndTime = 0; 
-        let pausedTimeLeft = 0; 
-
+        // --- MANEJO DE AUDIO ROBUSTO PARA PWA (STANDALONE iOS / Android) ---
         let audioCtx = null;
 
-        //<-----unlockaudio: desbloquea el canal de audio del navegador tras el toque inicial----------
         function unlockAudio() {
-            if (!audioCtx) {
+            try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (AudioContext) audioCtx = new AudioContext();
+                if (!audioCtx && AudioContext) {
+                    audioCtx = new AudioContext();
+                }
+                if (audioCtx) {
+                    if (audioCtx.state === 'suspended') {
+                        audioCtx.resume();
+                    }
+                    // Reproducir micro-pulso silencioso para enganchar el hardware de audio en modo standalone
+                    const buffer = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+                    const channel = buffer.getChannelData(0);
+                    channel[0] = 0;
+                    const dummySource = audioCtx.createBufferSource();
+                    dummySource.buffer = buffer;
+                    dummySource.connect(audioCtx.destination);
+                    dummySource.start(0);
+                }
+            } catch (e) {
+                console.error("Error al desbloquear audio:", e);
             }
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        document.addEventListener('click', unlockAudio, { passive: true });
-        document.addEventListener('touchstart', unlockAudio, { passive: true });
+        document.addEventListener('click', unlockAudio, { passive: true, capture: true });
+        document.addEventListener('touchstart', unlockAudio, { passive: true, capture: true });
+        document.addEventListener('touchend', unlockAudio, { passive: true, capture: true });
 
-        //<-----playtimersound: genera ráfagas de tonos agudos de alta frecuencia para sonar sobre música----------
         function playTimerSound() {
             try {
                 unlockAudio();
-                if (!audioCtx) return;
-                if (audioCtx.state === 'suspended') audioCtx.resume();
+                if (!audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) audioCtx = new AudioContext();
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
 
                 const now = audioCtx.currentTime;
 
@@ -2407,13 +2321,11 @@
                     osc.stop(time + duration);
                 };
 
-                // Ráfaga 1
                 createBeep(now, 1240, 0.12);
                 createBeep(now + 0.15, 1240, 0.12);
                 createBeep(now + 0.30, 1240, 0.12);
                 createBeep(now + 0.45, 1560, 0.25);
 
-                // Ráfaga 2
                 const secondBurst = now + 0.85;
                 createBeep(secondBurst, 1240, 0.12);
                 createBeep(secondBurst + 0.15, 1240, 0.12);
@@ -2421,12 +2333,19 @@
                 createBeep(secondBurst + 0.45, 1560, 0.35);
 
             } catch (e) {
-                console.error("Error al reproducir el sonido del temporizador:", e);
+                console.error("Error reproduciendo alarma:", e);
             }
         }
 
-        //<-----toggletimerfullscreen: abre o cierra la vista del temporizador a pantalla completa----------
+        let timerDuration = 120; 
+        let timerSecondsLeft = 0;
+        let timerInterval = null;
+        let isTimerPaused = false;
+        let timerEndTime = 0; 
+        let pausedTimeLeft = 0; 
+
         function toggleTimerFullscreen(show) {
+            unlockAudio();
             const overlay = document.getElementById('fullscreen-timer');
             if (show) {
                 overlay.style.display = 'flex';
@@ -2440,8 +2359,8 @@
             }
         }
 
-        //<-----startfullscreentimer: inicia la cuenta atrás del temporizador con la duración exacta----------
         function startFullscreenTimer(seconds) {
+            unlockAudio();
             clearInterval(timerInterval);
             timerDuration = seconds;
             timerSecondsLeft = seconds;
@@ -2472,7 +2391,6 @@
             }, 250);
         }
 
-        //<-----updatefullscreenui: actualiza los textos y el anillo de progreso circular del temporizador----------
         function updateFullscreenUI() {
             const minutes = Math.floor(timerSecondsLeft / 60);
             const seconds = timerSecondsLeft % 60;
@@ -2501,7 +2419,6 @@
             }
         }
 
-        //<-----toggletimeractive: pausa o reanuda el tiempo de descanso activo----------
         function toggleTimerActive() {
             isTimerPaused = !isTimerPaused;
             const btn = document.getElementById('btn-timer-toggle');
@@ -2518,7 +2435,6 @@
             }
         }
 
-        //<-----adjusttimer: suma o resta segundos al descanso actual----------
         function adjustTimer(amount) {
             if (isTimerPaused) {
                 pausedTimeLeft += amount;
@@ -2533,10 +2449,8 @@
             updateFullscreenUI();
         }
 
-        //<-----resettimerfullscreen: reinicia la cuenta atrás a 2 min 15 seg por defecto----------
         function resetTimerFullscreen() { startFullscreenTimer(135); }
 
-        //<-----startworkouttimer: cronómetro global que mide la duración total de la sesión activa----------
         function startWorkoutTimer() {
             clearInterval(workoutTimerInterval);
             const timerDisplay = document.getElementById('workout-timer-display');
@@ -2566,9 +2480,6 @@
             workoutTimerInterval = setInterval(updateDisplay, 1000);
         }
 
-        //----------------GESTIÓN DE EVENTOS DE PANTALLA E INICIALIZACIÓN-------------
-
-        //<-----eventlistener: reaccion al cambio de visibilidad de la ventana en moviles----------
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && timerInterval && !isTimerPaused) {
                 const msLeft = timerEndTime - Date.now();
@@ -2584,12 +2495,10 @@
             }
         });
 
-        //<-----eventlistener: prevencion de gestos multitactiles parasitarios----------
         document.addEventListener('touchstart', function (event) {
             if (event.touches.length > 1) event.preventDefault();
         }, { passive: false });
 
-        //<-----inicializacion: carga del estado guardado y arranque de la interfaz----------
         loadState();
         if (currentWorkout !== null) {
             startWorkoutTimer(); 
@@ -2601,8 +2510,8 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker registrado con éxito', reg))
-                    .catch(err => console.error('Error al registrar el Service Worker', err));
+                    .then(reg => console.log('Service Worker registrado', reg))
+                    .catch(err => console.error('Error SW', err));
             });
         }
     </script>
