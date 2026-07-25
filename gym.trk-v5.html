@@ -2257,33 +2257,29 @@
             event.target.value = '';
         }
 
-        // --- MANEJO DE AUDIO BLINDADO PARA GIMNASIO / BLUETOOTH / SAFARI ---
-        let audioCtx = null;
-
+        // --- MANEJO DE AUDIO BLINDADO PARA SAFARI / PWA STANDALONE ---
         function unlockAudio() {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (!audioCtx && AudioContext) {
-                    audioCtx = new AudioContext();
-                }
-                if (audioCtx) {
-                    if (audioCtx.state === 'suspended') {
-                        audioCtx.resume();
+                if (AudioContext) {
+                    const tempCtx = new AudioContext();
+                    if (tempCtx.state === 'suspended') {
+                        tempCtx.resume();
                     }
-                    const buffer = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+                    const buffer = tempCtx.createBuffer(1, 1, tempCtx.sampleRate);
                     const channel = buffer.getChannelData(0);
                     channel[0] = 0;
-                    const dummySource = audioCtx.createBufferSource();
-                    dummySource.buffer = buffer;
-                    dummySource.connect(audioCtx.destination);
-                    dummySource.start(0);
+                    const dummy = tempCtx.createBufferSource();
+                    dummy.buffer = buffer;
+                    dummy.connect(tempCtx.destination);
+                    dummy.start(0);
                 }
             } catch (e) {
-                console.error("Error al desbloquear audio:", e);
+                console.error("Error desbloqueando audio:", e);
             }
         }
 
-        // Mantener el canal despierto ante cualquier interacción táctil
+        // Registrar cualquier toque o clic en la interfaz para mantener el audio activo en iOS
         ['click', 'touchstart', 'touchend', 'mousedown'].forEach(eventType => {
             document.addEventListener(eventType, unlockAudio, { passive: true, capture: true });
         });
@@ -2293,19 +2289,16 @@
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 if (!AudioContext) return;
                 
-                // Forzar creación o reanudación inmediata ignorando suspensiones por inactividad
-                if (!audioCtx || audioCtx.state === 'closed') {
-                    audioCtx = new AudioContext();
-                }
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
+                const ctx = new AudioContext();
+                if (ctx.state === 'suspended') {
+                    ctx.resume();
                 }
 
-                const now = audioCtx.currentTime;
+                const now = ctx.currentTime;
 
                 const createBeep = (time, freq, duration) => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
                     
                     osc.type = 'square';
                     osc.frequency.setValueAtTime(freq, time);
@@ -2315,26 +2308,25 @@
                     gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
                     
                     osc.connect(gain);
-                    gain.connect(audioCtx.destination);
+                    gain.connect(ctx.destination);
                     
                     osc.start(time);
                     osc.stop(time + duration);
                 };
 
-                // Secuencia de pitidos robusta y de mayor duración para evitar cortes en auriculares Bluetooth
-                createBeep(now, 1240, 0.15);
-                createBeep(now + 0.18, 1240, 0.15);
-                createBeep(now + 0.36, 1240, 0.15);
-                createBeep(now + 0.54, 1560, 0.35);
+                createBeep(now, 1240, 0.12);
+                createBeep(now + 0.15, 1240, 0.12);
+                createBeep(now + 0.30, 1240, 0.12);
+                createBeep(now + 0.45, 1560, 0.25);
 
-                const secondBurst = now + 1.0;
-                createBeep(secondBurst, 1240, 0.15);
-                createBeep(secondBurst + 0.18, 1240, 0.15);
-                createBeep(secondBurst + 0.36, 1240, 0.15);
-                createBeep(secondBurst + 0.54, 1560, 0.45);
+                const secondBurst = now + 0.85;
+                createBeep(secondBurst, 1240, 0.12);
+                createBeep(secondBurst + 0.15, 1240, 0.12);
+                createBeep(secondBurst + 0.30, 1240, 0.12);
+                createBeep(secondBurst + 0.45, 1560, 0.35);
 
             } catch (e) {
-                console.error("Error reproduciendo alarma:", e);
+                console.error("Error reproduciendo alarma de fin de descanso:", e);
             }
         }
 
@@ -2380,12 +2372,6 @@
                 if (!isTimerPaused) {
                     const msLeft = timerEndTime - Date.now();
                     timerSecondsLeft = Math.max(0, Math.ceil(msLeft / 1000));
-                    
-                    // PRE-DESPERTAR: Forzar activación del audio 2 segundos antes de que llegue a cero para evitar el bloqueo por inactividad en el gimnasio
-                    if (timerSecondsLeft === 2) {
-                        unlockAudio();
-                    }
-
                     updateFullscreenUI();
 
                     if (timerSecondsLeft <= 0) {
