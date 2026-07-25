@@ -984,20 +984,20 @@
             if (currentWorkout) renderWorkout();
         }
 
-                //<---------cambiar de vista----------
+       //----------------(CAMBIO DE VISTAS BLINDADO)------------
         function switchView(viewId) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-
-            document.getElementById(viewId).classList.add('active');
-            const tabBtn = document.getElementById(`tab-${viewId}`);
-            if (tabBtn) tabBtn.classList.add('active');
-
-            if (viewId === 'history') renderHistory();
-            if (viewId === 'templates') renderTemplates();
-            if (viewId === 'workout') renderWorkout();
-            if (viewId === 'exercises') renderExerciseLibrary();
-            if (viewId === 'social') initSocial();
+            const targetElement = document.getElementById(viewId);
+            // Si el elemento no existe en el HTML, evitamos que la app rompa en pantalla en negro
+            if (!targetElement) {
+                console.warn("⚠️ Advertencia: La vista con ID '" + viewId + "' no existe en el DOM.");
+                return; 
+            }
+            // Ocultamos todas las vistas activas (ajusta según tu selector de contenedores)
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.remove('active');
+            });
+            // Mostramos la vista solicitada de forma segura
+            targetElement.classList.add('active');
         }
 
         function openCustomModal(title, placeholder, onConfirm, showMuscleSelect = false, showEquipSelect = false, showTargetReps = false, showRestTimer = false) {
