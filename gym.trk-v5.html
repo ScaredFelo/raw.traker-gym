@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <style>
-        /* ----------------HOJA DE ESTILOS CSS PRINCIPAL------------- */
+        /* ----------------(HOJA DE ESTILOS CSS PRINCIPAL)------------- */
 
         :root {
             --bg-main: #0a0a0a;
@@ -627,6 +627,17 @@
             <div class="modal-title" style="margin-bottom: 16px;">⚙️ Configuración</div>
             
             <div class="accordion-item" style="margin-bottom: 12px; border: 1px solid var(--border-color); background: var(--bg-input);">
+                <div id="acc-smith-header" class="accordion-header" onclick="toggleConfigAccordion('smith')" style="padding: 12px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+                    <span>⚖️ Peso Barra Multipower (Smith)</span>
+                    <span id="acc-smith-arrow">▶</span>
+                </div>
+                <div id="acc-smith-body" class="accordion-body" style="display: none; padding: 12px; border-top: 1px solid var(--border-color); background: var(--bg-card);">
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase;">Configura el peso inicial de la barra guiada en tu gimnasio:</p>
+                    <input type="number" step="0.5" id="config-smith-weight-input" placeholder="ej: 20" style="font-size: 0.9rem;">
+                </div>
+            </div>
+
+            <div class="accordion-item" style="margin-bottom: 12px; border: 1px solid var(--border-color); background: var(--bg-input);">
                 <div id="acc-disks-header" class="accordion-header" onclick="toggleConfigAccordion('disks')" style="padding: 12px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
                     <span>🏋️ Discos Disponibles</span>
                     <span id="acc-disks-arrow">▶</span>
@@ -884,6 +895,7 @@
             "25": true, "20": true, "15": true, "10": true, "5": true, "2.5": true, "1.25": true
         };
         let availableDisks = JSON.parse(localStorage.getItem('raw_gym_available_disks')) || defaultAvailableDisks;
+        let smithBarWeight = parseFloat(localStorage.getItem('raw_gym_smith_bar_weight')) || 20;
 
         let workoutStartTime = null;
         let workoutTimerInterval = null;
@@ -892,6 +904,7 @@
         let editingRoutineKey = null;
         let editingRoutineData = null;
 
+        //----------------(FUNCIONES DE FORMATO Y UTILIDADES)-------------
         function formatRestTime(secs) {
             if (!secs || secs <= 0) secs = 120;
             const m = Math.floor(secs / 60);
@@ -899,42 +912,46 @@
             return s > 0 ? `${m}m ${s}s` : `${m}m`;
         }
 
+        //----------------(GESTIÓN DE ACORDEÓN EN CONFIGURACIÓN)-------------
         function toggleConfigAccordion(section) {
+            const smithBody = document.getElementById('acc-smith-body');
+            const smithArrow = document.getElementById('acc-smith-arrow');
             const disksBody = document.getElementById('acc-disks-body');
             const disksArrow = document.getElementById('acc-disks-arrow');
             const githubBody = document.getElementById('acc-github-body');
             const githubArrow = document.getElementById('acc-github-arrow');
 
-            if (section === 'disks') {
-                const isDisksOpen = disksBody.style.display === 'block';
-                if (isDisksOpen) {
-                    disksBody.style.display = 'none';
-                    disksArrow.innerText = '▶';
-                } else {
-                    disksBody.style.display = 'block';
-                    disksArrow.innerText = '▼';
-                    githubBody.style.display = 'none';
-                    githubArrow.innerText = '▶';
-                }
+            if (section === 'smith') {
+                const isOpen = smithBody.style.display === 'block';
+                smithBody.style.display = isOpen ? 'none' : 'block';
+                smithArrow.innerText = isOpen ? '▶' : '▼';
+                disksBody.style.display = 'none'; disksArrow.innerText = '▶';
+                githubBody.style.display = 'none'; githubArrow.innerText = '▶';
+            } else if (section === 'disks') {
+                const isOpen = disksBody.style.display === 'block';
+                disksBody.style.display = isOpen ? 'none' : 'block';
+                disksArrow.innerText = isOpen ? '▶' : '▼';
+                smithBody.style.display = 'none'; smithArrow.innerText = '▶';
+                githubBody.style.display = 'none'; githubArrow.innerText = '▶';
             } else if (section === 'github') {
-                const isGithubOpen = githubBody.style.display === 'block';
-                if (isGithubOpen) {
-                    githubBody.style.display = 'none';
-                    githubArrow.innerText = '▶';
-                } else {
-                    githubBody.style.display = 'block';
-                    githubArrow.innerText = '▼';
-                    disksBody.style.display = 'none';
-                    disksArrow.innerText = '▶';
-                }
+                const isOpen = githubBody.style.display === 'block';
+                githubBody.style.display = isOpen ? 'none' : 'block';
+                githubArrow.innerText = isOpen ? '▶' : '▼';
+                smithBody.style.display = 'none'; smithArrow.innerText = '▶';
+                disksBody.style.display = 'none'; disksArrow.innerText = '▶';
             }
         }
 
+        //----------------(APERTURA Y CIERRE DE MODAL DE CONFIGURACIÓN)-------------
         function openConfigModal() {
+            document.getElementById('acc-smith-body').style.display = 'none';
+            document.getElementById('acc-smith-arrow').innerText = '▶';
             document.getElementById('acc-disks-body').style.display = 'none';
             document.getElementById('acc-disks-arrow').innerText = '▶';
             document.getElementById('acc-github-body').style.display = 'none';
             document.getElementById('acc-github-arrow').innerText = '▶';
+
+            document.getElementById('config-smith-weight-input').value = smithBarWeight;
 
             const container = document.getElementById('config-disks-checkboxes');
             container.innerHTML = '';
@@ -981,7 +998,14 @@
             document.getElementById('config-modal').classList.add('active');
         }
 
+        //----------------(GUARDAR CONFIGURACIÓN)-------------
         function closeConfigModal() {
+            const smithInputVal = parseFloat(document.getElementById('config-smith-weight-input').value);
+            if (!isNaN(smithInputVal) && smithInputVal >= 0) {
+                smithBarWeight = smithInputVal;
+                localStorage.setItem('raw_gym_smith_bar_weight', smithBarWeight);
+            }
+
             localStorage.setItem('raw_gym_gh_user', document.getElementById('gh-user').value.trim());
             localStorage.setItem('raw_gym_gh_repo', document.getElementById('gh-repo').value.trim());
             localStorage.setItem('raw_gym_gh_token', document.getElementById('gh-token').value.trim());
@@ -990,7 +1014,7 @@
             if (currentWorkout) renderWorkout();
         }
 
-        //----------------(CAMBIO DE VISTAS BLINDADO)------------
+        //----------------(NAVEGACIÓN ENTRE VISTAS BLINDADA)-------------
         function switchView(viewId) {
             const targetElement = document.getElementById(viewId);
             if (!targetElement) {
@@ -1002,7 +1026,6 @@
             });
             targetElement.classList.add('active');
 
-            // Actualizar botones del menú inferior activos de forma sincronizada
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
             const navMap = {
                 'view-history': 'tab-history',
@@ -1017,7 +1040,6 @@
                 if (tabBtn) tabBtn.classList.add('active');
             }
 
-            // Renderizar vistas específicas al abrirlas si es necesario
             if (viewId === 'view-history') {
                 renderHistory();
             } else if (viewId === 'view-templates') {
@@ -1030,6 +1052,7 @@
             }
         }
 
+        //----------------(MODAL GENERAL PERSONALIZADO)-------------
         function openCustomModal(title, placeholder, onConfirm, showMuscleSelect = false, showEquipSelect = false, showTargetReps = false, showRestTimer = false) {
             document.getElementById('modal-title').innerText = title;
             const input = document.getElementById('modal-input');
@@ -1098,6 +1121,7 @@
         let currentRestTargetType = null; 
         let currentRestTargetIndex = null;
 
+        //----------------(MODAL DE CAMBIO DE TIEMPO DE DESCANSO)-------------
         function openChangeRestTimerModal(exIndex) {
             currentRestTargetType = 'workout';
             currentRestTargetIndex = exIndex;
@@ -1145,6 +1169,7 @@
             }
         }
 
+        //----------------(GESTIÓN Y RENDERIZADO DE RUTINAS Y PLANTILLAS)-------------
         function renderRoutines() {
             const list = document.getElementById('routines-list');
             if (!list) return;
@@ -1275,6 +1300,7 @@
 
         function cancelRoutineEditor() { switchView('view-templates'); }
 
+        //----------------(GESTIÓN DE SESIÓN DE ENTRENAMIENTO ACTIVO)-------------
         function startRoutine(key) {
             if (currentWorkout && !confirm("¿Cambiar de rutina? Se perderá el progreso actual.")) return;
             currentWorkoutName = key;
@@ -1729,6 +1755,7 @@
             }
         }
 
+        //----------------(GESTIÓN DE HISTORIAL Y CALENDARIO)-------------
         let currentCalendarDate = new Date(); 
 
         function renderHistory() {
@@ -1907,6 +1934,7 @@
             }
         }
 
+        //----------------(GRÁFICAS Y EVOLUCIÓN)-------------
         function renderChartsExerciseList() {
             const listContainer = document.getElementById('chart-exercises-list');
             if (!listContainer) return;
@@ -2111,6 +2139,7 @@
             container.innerHTML = svgHtml;
         }
 
+        //----------------(CÁLCULO DINÁMICO DE DISCOS Y PESOS)-------------
         function getMinDisks(target) {
             let t = Math.round(target * 100);
             if (t < 0 || t % 125 !== 0) return null; 
@@ -2207,7 +2236,7 @@
                 case 'fixed-bar':
                     return `<span style="color: var(--text-secondary); text-transform: uppercase;">Fija</span> <span style="color: var(--accent-yellow);">${weight}</span>`;
                 case 'smith':
-                    return getDisksCombination(weight, 0);
+                    return getDisksCombination(weight, smithBarWeight);
                 case 'plate-machine':
                     return getDisksCombination(weight, 0);
                 case 'barbell-olympic':
@@ -2219,6 +2248,7 @@
             }
         }
 
+        //----------------(PERSISTENCIA Y COPIA DE SEGURIDAD)-------------
         function saveTemplates() { localStorage.setItem('raw_gym_templates', JSON.stringify(templates)); }
 
         function saveState() {
@@ -2325,7 +2355,7 @@
             event.target.value = '';
         }
 
-        // --- MANEJO DE AUDIO BLINDADO PARA SAFARI / PWA STANDALONE ---
+        //----------------(GESTIÓN DE AUDIO Y ALARMAS)-------------
         function unlockAudio() {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -2397,6 +2427,7 @@
             }
         }
 
+        //----------------(CRONÓMETRO Y TEMPORIZADOR DE DESCANSO)-------------
         let timerDuration = 120; 
         let timerSecondsLeft = 0;
         let timerInterval = null;
@@ -2598,7 +2629,7 @@
             setTimeout(initSocial, 1000);
         }
 
-        //<-----------------(normalizador hibrido de nombres de ejercicios)----------
+        //----------------(NORMALIZACIÓN Y FILTRADO SOCIAL DE EJERCICIOS)-------------
         function normalizeExerciseName(name) {
             let n = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             if(n.includes("banca") || n.includes("bench")) return "bench_press";
@@ -2615,21 +2646,28 @@
 
         function getMyBestMarks() {
             let bestMarks = {};
+            // Lista blanca de ejercicios de peso libre comparables + cualquier ejercicio tipo 'smith' (Multipower calibrada)
+            const allowedKeys = ['bench_press', 'squat', 'deadlift', 'overhead_press'];
+
             history.forEach(session => {
                 session.exercises.forEach(ex => {
                     let baseKey = normalizeExerciseName(ex.name);
-                    ex.sets.forEach(set => {
-                        if(set.completed && set.weight > 0) {
-                            if(!bestMarks[baseKey] || set.weight > bestMarks[baseKey].weight) {
-                                bestMarks[baseKey] = { 
-                                    weight: set.weight, 
-                                    reps: set.reps, 
-                                    date: session.date, 
-                                    visualName: ex.name 
-                                };
+                    let isSmith = (ex.equipType === 'smith');
+
+                    if (allowedKeys.includes(baseKey) || isSmith) {
+                        ex.sets.forEach(set => {
+                            if(set.completed && set.weight > 0) {
+                                if(!bestMarks[baseKey] || set.weight > bestMarks[baseKey].weight) {
+                                    bestMarks[baseKey] = { 
+                                        weight: set.weight, 
+                                        reps: set.reps, 
+                                        date: session.date, 
+                                        visualName: ex.name 
+                                    };
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 });
             });
             return bestMarks;
@@ -2724,7 +2762,6 @@
             });
         }
 
-        //<-----------------(comparar marcas con un amigo de forma visual y unificada)----------
         async function compareWithFriend(friendName) {
             try {
                 const endpoint = getSupabaseEndpoint(`usuarios?username=eq.${friendName}&select=*`);
@@ -2741,11 +2778,10 @@
                     const contentContainer = document.getElementById('comparison-content');
                     contentContainer.innerHTML = '';
 
-                    // Obtener todas las claves únicas normalizadas de ambos
                     const allKeys = Array.from(new Set([...Object.keys(myMarks), ...Object.keys(friendMarks)]));
 
                     if (allKeys.length === 0) {
-                        contentContainer.innerHTML = `<p style="color:var(--text-secondary); text-align:center; padding:20px;">No hay marcas registradas para comparar.</p>`;
+                        contentContainer.innerHTML = `<p style="color:var(--text-secondary); text-align:center; padding:20px;">No hay marcas comparables registradas (solo peso libre y máquinas Smith).</p>`;
                     } else {
                         allKeys.forEach(key => {
                             const mine = myMarks[key];
@@ -2783,6 +2819,7 @@
             }
         }
 
+        //----------------(INICIALIZACIÓN DE LA PWA)-------------
         document.addEventListener('touchstart', function (event) {
             if (event.touches.length > 1) event.preventDefault();
         }, { passive: false });
@@ -2796,6 +2833,7 @@
     </script>
     
     <script>
+        //----------------(REGISTRO DE SERVICE WORKER Y CONTROL DE ERRORES)-------------
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
@@ -2804,7 +2842,6 @@
             });
         }
 
-        //---------(CHIVATO DE ERRORES VISUAL BLINDADO)------------
         window.onerror = function(msg, url, lineNo, columnNo, error) {
             if (msg === 'Script error.' || (lineNo === 0 && !url)) {
                 return true; 
