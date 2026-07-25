@@ -2514,15 +2514,23 @@
                 }
             }
         });
+        //----------------(SISTEMA SOCIAL Y SUPABASE)-------------
 
-                //----------------(SISTEMA SOCIAL Y SUPABASE)-------------
-
-        // Variables de conexión (Las rellenaremos al configurar Supabase)
-        const SUPABASE_URL = 'https://ckgsxzeiwrjsphfxtfvq.supabase.co//rest/v1/usuarios'; 
+        // Variables de conexión
+        const SUPABASE_URL = 'https://ckgsxzeiwrjsphfxtfvq.supabase.co/rest/v1/'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrZ3N4emVpd3Jqc3BoZnh0ZnZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5OTI2NjIsImV4cCI6MjEwMDU2ODY2Mn0.Iq5PjiO-z0TJ3WVm7Da6eA0lO5YwSQfS2sYX_8F_tbo';
 
         let myUsername = localStorage.getItem('gym_username') || null;
         let myFriends = JSON.parse(localStorage.getItem('gym_friends')) || [];
+
+        //<---------función auxiliar para construir la URL correcta----------
+        function getSupabaseEndpoint(path) {
+            let baseUrl = SUPABASE_URL.trim().replace(/\/+$/, ''); // Quita barras al final
+            if (!baseUrl.endsWith('/rest/v1')) {
+                baseUrl += '/rest/v1';
+            }
+            return `${baseUrl}/${path}`;
+        }
 
         //<---------inicializar vista social----------
         function initSocial() {
@@ -2555,14 +2563,13 @@
             if(n.includes("muerto") || n.includes("deadlift")) return "deadlift";
             if(n.includes("militar") || n.includes("overhead")) return "overhead_press";
             if(n.includes("curl")) return "biceps_curl";
-            return n.replace(/\s+/g, "_"); // Si no está en la lista base, usa su propio nombre limpio
+            return n.replace(/\s+/g, "_");
         }
 
         //<---------sincronizar mis marcas a la nube----------
-        //<---------sincronizar mis marcas a la nube----------
         async function syncDataToCloud() {
             if (!myUsername) return alert("Primero debes crear un nickname.");
-            if (SUPABASE_URL.includes('TU_URL_AQUI')) return alert("Falta configurar la API de Supabase.");
+            if (SUPABASE_URL.includes('PEGA_AQUI')) return alert("Falta configurar la API de Supabase.");
             
             const history = JSON.parse(localStorage.getItem('gym_history')) || [];
             let bestMarks = {};
@@ -2593,8 +2600,8 @@
             };
 
             try {
-                // Añadimos on_conflict=username para asegurar que actualice si ya existe
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?on_conflict=username`, {
+                const endpoint = getSupabaseEndpoint('usuarios?on_conflict=username');
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2617,7 +2624,7 @@
                 alert("Sin conexión o error de red: " + error.message);
             }
         }
-        
+
         //<---------buscar y añadir amigo----------
         async function searchFriend() {
             const friendName = document.getElementById('friend-search-input').value.trim().toLowerCase();
@@ -2625,7 +2632,8 @@
             if (friendName === myUsername) return alert("No te puedes añadir a ti mismo.");
 
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?username=eq.${friendName}&select=*`, {
+                const endpoint = getSupabaseEndpoint(`usuarios?username=eq.${friendName}&select=*`);
+                const response = await fetch(endpoint, {
                     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                 });
                 
@@ -2670,13 +2678,14 @@
         //<---------comparar marcas con amigo----------
         async function compareWithFriend(friendName) {
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?username=eq.${friendName}&select=*`, {
+                const endpoint = getSupabaseEndpoint(`usuarios?username=eq.${friendName}&select=*`);
+                const response = await fetch(endpoint, {
                     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                 });
                 const data = await response.json();
                 if(data && data.length > 0) {
                     console.log(`Marcas de ${friendName}:`, data[0].marcas);
-                    alert(`¡Datos de @${friendName} obtenidos correctamente!\n\nRevisa la consola para ver el JSON o avísame para pintar la tabla comparativa visual.`);
+                    alert(`¡Datos de @${friendName} obtenidos correctamente!`);
                 }
             } catch(err) { 
                 alert("No se pudo descargar la info del rival."); 
