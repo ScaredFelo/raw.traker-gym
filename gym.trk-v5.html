@@ -659,7 +659,7 @@
         </div>
     </div>
 
-    <div id="view-train" class="view active">
+    <div id="view-workout" class="view">
         <header style="display: flex; flex-direction: column; align-items: stretch; gap: 8px;">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <h1 id="workout-title">Sin Sesión Activa</h1>
@@ -676,13 +676,13 @@
         <div id="workout-container">
             <div style="text-align: center; padding: 40px 10px; border: 1px dashed var(--border-color);">
                 <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem;">No tienes ningún entrenamiento activo en este momento.</p>
-                <button class="btn" onclick="switchView('routines', document.querySelectorAll('.nav-item')[1])">Seleccionar una Rutina</button>
+                <button class="btn" onclick="switchView('view-templates')">Seleccionar una Rutina</button>
             </div>
         </div>
         <button id="btn-add-exercise-session" class="btn btn-add-set" style="margin-top: 16px; border-style: solid; display: none;" onclick="openAddExerciseSessionModal()">+ Añadir Ejercicio</button>
     </div>
 
-    <div id="view-routines" class="view">
+    <div id="view-templates" class="view">
         <header>
             <h1>Mis Plantillas</h1>
             <button class="btn btn-success" onclick="openCreateRoutineModal()">+ Nueva</button>
@@ -706,7 +706,7 @@
         <button class="btn btn-block" style="margin-top: 8px; background: transparent;" onclick="cancelRoutineEditor()">Cancelar</button>
     </div>
 
-    <div id="view-history" class="view">
+    <div id="view-history" class="view active">
         <header>
             <h1>Historial</h1>
         </header>
@@ -737,7 +737,7 @@
         </div>
     </div>
 
-    <div id="view-charts" class="view">
+    <div id="view-exercises" class="view">
         <header>
             <h1>Evolución</h1>
         </header>
@@ -762,6 +762,32 @@
 
         <h2 style="margin-top: 10px;">Selecciona un ejercicio del historial:</h2>
         <div id="chart-exercises-list"></div>
+    </div>
+
+    <div id="view-social" class="view">
+        <header>
+            <h1>SOCIAL</h1>
+            <button class="btn btn-success" onclick="syncDataToCloud()">Sincronizar Marcas</button>
+        </header>
+            
+        <div id="social-auth-section" style="margin-bottom: 20px;">
+            <h2>Tu Perfil</h2>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom:10px;">Crea un nickname único para que tus amigos te encuentren.</p>
+            <input type="text" id="username-input" placeholder="Ej: Carlos_Lift" style="margin-bottom: 10px;">
+            <button class="btn btn-block" onclick="saveUsername()">Guardar Nickname</button>
+            <p id="auth-status" style="font-size: 0.8rem; color: var(--accent-green); margin-top: 5px;"></p>
+        </div>
+
+        <div id="social-friends-section" style="display:none;">
+            <h2>Añadir Amigo</h2>
+            <div style="display:flex; gap: 10px; margin-bottom: 20px;">
+                <input type="text" id="friend-search-input" placeholder="Nickname del amigo">
+                <button class="btn" onclick="searchFriend()">Buscar</button>
+            </div>
+
+            <h2>Tus Rivales</h2>
+            <div id="friends-list"></div>
+        </div>
     </div>
 
     <div class="timer-bar" onclick="toggleTimerFullscreen(true)" style="cursor: pointer; padding: 12px 15px;">
@@ -789,40 +815,13 @@
             <button class="timer-reset-btn" onclick="resetTimerFullscreen()">Resetear</button>
         </div>
     </div>
-    
-    <div id="social" class="view">
-        <header>
-            <h1>SOCIAL</h1>
-            <button class="btn btn-success" onclick="syncDataToCloud()">Sincronizar Marcas</button>
-        </header>
-            
-        <div id="social-auth-section" style="margin-bottom: 20px;">
-            <h2>Tu Perfil</h2>
-            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom:10px;">Crea un nickname único para que tus amigos te encuentren.</p>
-            <input type="text" id="username-input" placeholder="Ej: Carlos_Lift" style="margin-bottom: 10px;">
-            <button class="btn btn-block" onclick="saveUsername()">Guardar Nickname</button>
-            <p id="auth-status" style="font-size: 0.8rem; color: var(--accent-green); margin-top: 5px;"></p>
-        </div>
-
-        <div id="social-friends-section" style="display:none;">
-            <h2>Añadir Amigo</h2>
-            <div style="display:flex; gap: 10px; margin-bottom: 20px;">
-                <input type="text" id="friend-search-input" placeholder="Nickname del amigo">
-                <button class="btn" onclick="searchFriend()">Buscar</button>
-            </div>
-
-            <h2>Tus Rivales</h2>
-            <div id="friends-list">
-                </div>
-        </div>
-    </div>
 
     <div class="bottom-nav">
-        <button class="nav-item active" onclick="switchView('history')" id="tab-history">HISTORIAL</button>
-        <button class="nav-item" onclick="switchView('templates')" id="tab-templates">RUTINAS</button>
-        <button class="nav-item" onclick="switchView('workout')" id="tab-workout">ENTRENAR</button>
-        <button class="nav-item" onclick="switchView('exercises')" id="tab-exercises">EJERCICIOS</button>
-        <button class="nav-item" onclick="switchView('social')" id="tab-social">SOCIAL</button>
+        <button class="nav-item active" onclick="switchView('view-history')" id="tab-history">HISTORIAL</button>
+        <button class="nav-item" onclick="switchView('view-templates')" id="tab-templates">RUTINAS</button>
+        <button class="nav-item" onclick="switchView('view-workout')" id="tab-workout">ENTRENAR</button>
+        <button class="nav-item" onclick="switchView('view-exercises')" id="tab-exercises">EJERCICIOS</button>
+        <button class="nav-item" onclick="switchView('view-social')" id="tab-social">SOCIAL</button>
     </div>
 
     <script>
@@ -983,20 +982,44 @@
             if (currentWorkout) renderWorkout();
         }
 
-       //----------------(CAMBIO DE VISTAS BLINDADO)------------
+        //----------------(CAMBIO DE VISTAS BLINDADO)------------
         function switchView(viewId) {
             const targetElement = document.getElementById(viewId);
-            // Si el elemento no existe en el HTML, evitamos que la app rompa en pantalla en negro
             if (!targetElement) {
                 console.warn("⚠️ Advertencia: La vista con ID '" + viewId + "' no existe en el DOM.");
                 return; 
             }
-            // Ocultamos todas las vistas activas (ajusta según tu selector de contenedores)
-            document.querySelectorAll('.view-section').forEach(el => {
+            document.querySelectorAll('.view').forEach(el => {
                 el.classList.remove('active');
             });
-            // Mostramos la vista solicitada de forma segura
             targetElement.classList.add('active');
+
+            // Actualizar botones del menú inferior activos de forma sincronizada
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            const navMap = {
+                'view-history': 'tab-history',
+                'view-templates': 'tab-templates',
+                'view-workout': 'tab-workout',
+                'view-exercises': 'tab-exercises',
+                'view-social': 'tab-social'
+            };
+            const activeTabId = navMap[viewId];
+            if (activeTabId) {
+                const tabBtn = document.getElementById(activeTabId);
+                if (tabBtn) tabBtn.classList.add('active');
+            }
+
+            // Renderizar vistas específicas al abrirlas si es necesario
+            if (viewId === 'view-history') {
+                renderHistory();
+            } else if (viewId === 'view-templates') {
+                renderRoutines();
+            } else if (viewId === 'view-exercises') {
+                renderWeeklyMuscleVolume();
+                renderChartsExerciseList();
+            } else if (viewId === 'view-social') {
+                initSocial();
+            }
         }
 
         function openCustomModal(title, placeholder, onConfirm, showMuscleSelect = false, showEquipSelect = false, showTargetReps = false, showRestTimer = false) {
@@ -1112,6 +1135,7 @@
 
         function renderRoutines() {
             const list = document.getElementById('routines-list');
+            if (!list) return;
             list.innerHTML = '';
             Object.keys(templates).forEach(key => {
                 const card = document.createElement('div');
@@ -1165,11 +1189,11 @@
                 if (confirm(`¿Eliminar la rutina "${key}"?`)) {
                     delete templates[key];
                     saveTemplates();
-                    switchView('routines');
+                    switchView('view-templates');
                 }
             };
             renderEditorExercises();
-            switchView('edit-routine');
+            switchView('view-edit-routine');
         }
 
         function moveEditorExercise(idx, direction) {
@@ -1234,10 +1258,10 @@
             if (newName !== editingRoutineKey) delete templates[editingRoutineKey];
             templates[newName] = editingRoutineData;
             saveTemplates();
-            switchView('routines');
+            switchView('view-templates');
         }
 
-        function cancelRoutineEditor() { switchView('routines'); }
+        function cancelRoutineEditor() { switchView('view-templates'); }
 
         function startRoutine(key) {
             if (currentWorkout && !confirm("¿Cambiar de rutina? Se perderá el progreso actual.")) return;
@@ -1274,7 +1298,7 @@
 
             saveState();
             renderWorkout();
-            switchView('train', document.querySelectorAll('.nav-item')[0]);
+            switchView('view-workout');
         }
 
         function startEmptyWorkout() {
@@ -1295,7 +1319,7 @@
 
             saveState();
             renderWorkout();
-            switchView('train', document.querySelectorAll('.nav-item')[0]);
+            switchView('view-workout');
         }
 
         function findLastCompletedExerciseData(exerciseName) {
@@ -1319,6 +1343,7 @@
 
         function renderWorkout() {
             const container = document.getElementById('workout-container');
+            if (!container) return;
             container.innerHTML = '';
 
             if (currentWorkout === null) {
@@ -1326,7 +1351,7 @@
                     <div style="display: flex; flex-direction: column; gap: 16px;">
                         <div style="text-align: center; padding: 30px 10px; border: 1px dashed var(--border-color); background: var(--bg-card);">
                             <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">🏋️ Entrenar con plantilla</p>
-                            <button class="btn" onclick="switchView('routines', document.querySelectorAll('.nav-item')[1])">Seleccionar una Rutina</button>
+                            <button class="btn" onclick="switchView('view-templates')">Seleccionar una Rutina</button>
                         </div>
                         <div style="text-align: center; padding: 30px 10px; border: 1px dashed var(--border-color); background: var(--bg-card);">
                             <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">⚡ Entrenar sobre la marcha</p>
@@ -1595,7 +1620,7 @@
                 currentWorkoutName = "";
                 saveState();
                 renderWorkout();
-                switchView('history', document.querySelectorAll('.nav-item')[2]);
+                switchView('view-history');
 
                 if (workoutToSaveAsTemplate.length > 0) {
                     setTimeout(() => {
@@ -1780,11 +1805,14 @@
                 
                 showDayWorkouts(today.getDate(), todayWorkouts, true);
             } else {
-                document.getElementById('calendar-day-details').innerHTML = `
-                    <p style="color: var(--text-secondary); text-align: center; padding: 25px 10px; font-size: 0.85rem; border: 1px dashed var(--border-color); margin-top: 12px;">
-                        Selecciona un día en verde del calendario para ver tus sesiones
-                    </p>
-                `;
+                const dayDetails = document.getElementById('calendar-day-details');
+                if (dayDetails) {
+                    dayDetails.innerHTML = `
+                        <p style="color: var(--text-secondary); text-align: center; padding: 25px 10px; font-size: 0.85rem; border: 1px dashed var(--border-color); margin-top: 12px;">
+                            Selecciona un día en verde del calendario para ver tus sesiones
+                        </p>
+                    `;
+                }
             }
         }
 
@@ -1869,6 +1897,7 @@
 
         function renderChartsExerciseList() {
             const listContainer = document.getElementById('chart-exercises-list');
+            if (!listContainer) return;
             listContainer.innerHTML = '';
 
             let exercisesSet = new Set();
@@ -1947,6 +1976,7 @@
 
         function buildSingleSvgChart(containerId, points) {
             const container = document.getElementById(containerId);
+            if (!container) return;
             if (points.length === 0) {
                 container.innerHTML = `<div style="color:var(--text-secondary); text-align:center; padding:30px; font-size:0.85rem; background: var(--bg-main); border:1px solid var(--border-color);">Sin registros completados en este periodo.</div>`;
                 return;
@@ -2305,7 +2335,6 @@
             }
         }
 
-        // Registrar cualquier toque o clic en la interfaz para mantener el audio activo en iOS
         ['click', 'touchstart', 'touchend', 'mousedown'].forEach(eventType => {
             document.addEventListener(eventType, unlockAudio, { passive: true, capture: true });
         });
@@ -2513,48 +2542,50 @@
                 }
             }
         });
-        //----------------(SISTEMA SOCIAL Y SUPABASE)-------------
 
-        // Variables de conexión
+        //----------------(SISTEMA SOCIAL Y SUPABASE)-------------
         const SUPABASE_URL = 'https://ckgsxzeiwrjsphfxtfvq.supabase.co/rest/v1/'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrZ3N4emVpd3Jqc3BoZnh0ZnZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5OTI2NjIsImV4cCI6MjEwMDU2ODY2Mn0.Iq5PjiO-z0TJ3WVm7Da6eA0lO5YwSQfS2sYX_8F_tbo';
 
         let myUsername = localStorage.getItem('gym_username') || null;
         let myFriends = JSON.parse(localStorage.getItem('gym_friends')) || [];
 
-        //<---------función auxiliar para construir la URL correcta----------
         function getSupabaseEndpoint(path) {
-            let baseUrl = SUPABASE_URL.trim().replace(/\/+$/, ''); // Quita barras al final
+            let baseUrl = SUPABASE_URL.trim().replace(/\/+$/, '');
             if (!baseUrl.endsWith('/rest/v1')) {
                 baseUrl += '/rest/v1';
             }
             return `${baseUrl}/${path}`;
         }
 
-        //<---------inicializar vista social----------
         function initSocial() {
             if (myUsername) {
-                document.getElementById('social-auth-section').style.display = 'none';
-                document.getElementById('social-friends-section').style.display = 'block';
+                const authSec = document.getElementById('social-auth-section');
+                const friendsSec = document.getElementById('social-friends-section');
+                if (authSec) authSec.style.display = 'none';
+                if (friendsSec) friendsSec.style.display = 'block';
                 renderFriendsList();
             } else {
-                document.getElementById('social-auth-section').style.display = 'block';
-                document.getElementById('social-friends-section').style.display = 'none';
+                const authSec = document.getElementById('social-auth-section');
+                const friendsSec = document.getElementById('social-friends-section');
+                if (authSec) authSec.style.display = 'block';
+                if (friendsSec) friendsSec.style.display = 'none';
             }
         }
 
-        //<---------guardar nombre de usuario----------
         function saveUsername() {
-            const input = document.getElementById('username-input').value.trim();
+            const inputEl = document.getElementById('username-input');
+            if (!inputEl) return;
+            const input = inputEl.value.trim();
             if (!input) return alert("Introduce un nickname válido.");
             
             myUsername = input.toLowerCase().replace(/\s+/g, "_");
             localStorage.setItem('gym_username', myUsername);
-            document.getElementById('auth-status').innerText = "¡Perfil creado: @" + myUsername + "!";
+            const statusEl = document.getElementById('auth-status');
+            if (statusEl) statusEl.innerText = "¡Perfil creado: @" + myUsername + "!";
             setTimeout(initSocial, 1000);
         }
 
-        //<---------normalizador de ejercicios híbrido----------
         function normalizeExerciseName(name) {
             let n = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             if(n.includes("banca") || n.includes("bench")) return "bench_press";
@@ -2565,16 +2596,14 @@
             return n.replace(/\s+/g, "_");
         }
 
-        //<---------sincronizar mis marcas a la nube----------
         async function syncDataToCloud() {
             if (!myUsername) return alert("Primero debes crear un nickname.");
             if (SUPABASE_URL.includes('PEGA_AQUI')) return alert("Falta configurar la API de Supabase.");
             
-            const history = JSON.parse(localStorage.getItem('gym_history')) || [];
+            const historyData = JSON.parse(localStorage.getItem('raw_gym_history')) || [];
             let bestMarks = {};
             
-            // Extraer mejores pesos históricos por ejercicio normalizado
-            history.forEach(session => {
+            historyData.forEach(session => {
                 session.exercises.forEach(ex => {
                     let baseKey = normalizeExerciseName(ex.name);
                     ex.sets.forEach(set => {
@@ -2624,9 +2653,10 @@
             }
         }
 
-        //<---------buscar y añadir amigo----------
         async function searchFriend() {
-            const friendName = document.getElementById('friend-search-input').value.trim().toLowerCase();
+            const searchInput = document.getElementById('friend-search-input');
+            if (!searchInput) return;
+            const friendName = searchInput.value.trim().toLowerCase();
             if (!friendName) return alert("Escribe un nickname.");
             if (friendName === myUsername) return alert("No te puedes añadir a ti mismo.");
 
@@ -2654,9 +2684,9 @@
             }
         }
 
-        //<---------dibujar lista de amigos----------
         function renderFriendsList() {
             const container = document.getElementById('friends-list');
+            if (!container) return;
             container.innerHTML = '';
             if (myFriends.length === 0) {
                 container.innerHTML = '<p style="color:var(--text-secondary); font-size:0.85rem;">Aún no sigues a ningún rival.</p>';
@@ -2674,7 +2704,6 @@
             });
         }
 
-        //<---------comparar marcas con amigo----------
         async function compareWithFriend(friendName) {
             try {
                 const endpoint = getSupabaseEndpoint(`usuarios?username=eq.${friendName}&select=*`);
@@ -2699,6 +2728,7 @@
         if (currentWorkout !== null) {
             startWorkoutTimer(); 
         }
+        renderHistory();
         renderWorkout();
     </script>
     
@@ -2710,7 +2740,7 @@
                     .catch(err => console.error('Error SW', err));
             });
         }
-        //---------(CHIVATO DE ERRORES VISUAL)------------
+
         window.onerror = function(msg, url, lineNo, columnNo, error) {
             const message = [
                 'Message: ' + msg,
@@ -2720,7 +2750,6 @@
                 'Error object: ' + JSON.stringify(error)
             ].join(' - ');
     
-            // Muestra el error en un cuadro rojo en la pantalla de la PWA
             let errorBox = document.getElementById('debug-error-box');
             if (!errorBox) {
                 errorBox = document.createElement('div');
@@ -2731,7 +2760,6 @@
             errorBox.innerText = "🚨 ERROR CRÍTICO: " + message;
             return false;
         };
-
     </script>
 </body>
 </html>
