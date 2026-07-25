@@ -2741,7 +2741,13 @@
             });
         }
 
+        //---------(CHIVATO DE ERRORES VISUAL BLINDADO)------------
         window.onerror = function(msg, url, lineNo, columnNo, error) {
+            // Ignorar falsos positivos de extensiones, scripts externos o el gestor de compartir de Safari
+            if (msg === 'Script error.' || (lineNo === 0 && !url)) {
+                return true; 
+            }
+
             const message = [
                 'Message: ' + msg,
                 'URL: ' + url,
