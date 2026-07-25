@@ -590,6 +590,14 @@
         </div>
     </div>
 
+    <div id="comparison-modal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 450px;">
+            <div class="modal-title" id="comp-modal-title">Comparativa de Marcas</div>
+            <div id="comparison-content" style="max-height: 60vh; overflow-y: auto; margin-bottom: 16px;"></div>
+            <button class="btn btn-block" onclick="closeComparisonModal()">Cerrar</button>
+        </div>
+    </div>
+
     <div id="rest-picker-modal" class="modal-overlay">
         <div class="modal-box" style="text-align: center;">
             <div class="modal-title" id="rest-modal-title">Tiempo de Descanso</div>
@@ -1081,6 +1089,10 @@
 
         function closeCustomModal() {
             document.getElementById('custom-modal').classList.remove('active');
+        }
+
+        function closeComparisonModal() {
+            document.getElementById('comparison-modal').classList.remove('active');
         }
 
         let currentRestTargetType = null; 
@@ -2586,24 +2598,24 @@
             setTimeout(initSocial, 1000);
         }
 
+        //<-----------------(normalizador hibrido de nombres de ejercicios)----------
         function normalizeExerciseName(name) {
             let n = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             if(n.includes("banca") || n.includes("bench")) return "bench_press";
             if(n.includes("sentadilla") || n.includes("squat")) return "squat";
             if(n.includes("muerto") || n.includes("deadlift")) return "deadlift";
-            if(n.includes("militar") || n.includes("overhead")) return "overhead_press";
-            if(n.includes("curl")) return "biceps_curl";
-            return n.replace(/\s+/g, "_");
+            if(n.includes("militar") || n.includes("overhead") || n.includes("press hombro")) return "overhead_press";
+            if(n.includes("jalon") || n.includes("pulldown")) return "lat_pulldown";
+            if(n.includes("remo") || n.includes("row")) return "row";
+            if(n.includes("curl") || n.includes("biceps")) return "biceps_curl";
+            if(n.includes("triceps") || n.includes("pushdown")) return "triceps_pushdown";
+            if(n.includes("prensa") || n.includes("leg press")) return "leg_press";
+            return n.replace(/[^a-z0-9]/g, "_");
         }
 
-        async function syncDataToCloud() {
-            if (!myUsername) return alert("Primero debes crear un nickname.");
-            if (SUPABASE_URL.includes('PEGA_AQUI')) return alert("Falta configurar la API de Supabase.");
-            
-            const historyData = JSON.parse(localStorage.getItem('raw_gym_history')) || [];
+        function getMyBestMarks() {
             let bestMarks = {};
-            
-            historyData.forEach(session => {
+            history.forEach(session => {
                 session.exercises.forEach(ex => {
                     let baseKey = normalizeExerciseName(ex.name);
                     ex.sets.forEach(set => {
@@ -2620,6 +2632,14 @@
                     });
                 });
             });
+            return bestMarks;
+        }
+
+        async function syncDataToCloud() {
+            if (!myUsername) return alert("Primero debes crear un nickname.");
+            if (SUPABASE_URL.includes('PEGA_AQUI')) return alert("Falta configurar la API de Supabase.");
+            
+            const bestMarks = getMyBestMarks();
 
             const payload = {
                 username: myUsername,
@@ -2704,6 +2724,7 @@
             });
         }
 
+        //<-----------------(comparar marcas con un amigo de forma visual y unificada)----------
         async function compareWithFriend(friendName) {
             try {
                 const endpoint = getSupabaseEndpoint(`usuarios?username=eq.${friendName}&select=*`);
@@ -2711,11 +2732,53 @@
                     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                 });
                 const data = await response.json();
-                if(data && data.length > 0) {
-                    console.log(`Marcas de ${friendName}:`, data[0].marcas);
-                    alert(`¡Datos de @${friendName} obtenidos correctamente!`);
+                
+                if (data && data.length > 0) {
+                    const friendMarks = data[0].marcas || {};
+                    const myMarks = getMyBestMarks();
+                    
+                    document.getElementById('comp-modal-title').innerText = `Rival: @${friendName}`;
+                    const contentContainer = document.getElementById('comparison-content');
+                    contentContainer.innerHTML = '';
+
+                    // Obtener todas las claves únicas normalizadas de ambos
+                    const allKeys = Array.from(new Set([...Object.keys(myMarks), ...Object.keys(friendMarks)]));
+
+                    if (allKeys.length === 0) {
+                        contentContainer.innerHTML = `<p style="color:var(--text-secondary); text-align:center; padding:20px;">No hay marcas registradas para comparar.</p>`;
+                    } else {
+                        allKeys.forEach(key => {
+                            const mine = myMarks[key];
+                            const theirs = friendMarks[key];
+
+                            const exerciseDisplayName = mine ? mine.visualName : (theirs ? theirs.visualName : key);
+
+                            const card = document.createElement('div');
+                            card.style.cssText = 'background:var(--bg-input); border:1px solid var(--border-color); padding:10px; margin-bottom:8px;';
+                            
+                            card.innerHTML = `
+                                <div style="font-weight:700; font-size:0.9rem; text-transform:uppercase; margin-bottom:6px; color:var(--accent-green);">${exerciseDisplayName}</div>
+                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size:0.85rem;">
+                                    <div style="background:var(--bg-card); padding:6px; border:1px solid var(--border-color);">
+                                        <span style="color:var(--text-secondary); display:block; font-size:0.7rem;">TÚ</span>
+                                        <strong>${mine ? mine.weight + ' kg x ' + mine.reps : '-'}</strong>
+                                    </div>
+                                    <div style="background:var(--bg-card); padding:6px; border:1px solid var(--border-color);">
+                                        <span style="color:var(--text-secondary); display:block; font-size:0.7rem;">@${friendName}</span>
+                                        <strong>${theirs ? theirs.weight + ' kg x ' + theirs.reps : '-'}</strong>
+                                    </div>
+                                </div>
+                            `;
+                            contentContainer.appendChild(card);
+                        });
+                    }
+
+                    document.getElementById('comparison-modal').classList.add('active');
+                } else {
+                    alert("No se han encontrado datos para este usuario.");
                 }
             } catch(err) { 
+                console.error(err);
                 alert("No se pudo descargar la info del rival."); 
             }
         }
@@ -2743,7 +2806,6 @@
 
         //---------(CHIVATO DE ERRORES VISUAL BLINDADO)------------
         window.onerror = function(msg, url, lineNo, columnNo, error) {
-            // Ignorar falsos positivos de extensiones, scripts externos o el gestor de compartir de Safari
             if (msg === 'Script error.' || (lineNo === 0 && !url)) {
                 return true; 
             }
