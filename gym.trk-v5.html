@@ -2559,9 +2559,10 @@
         }
 
         //<---------sincronizar mis marcas a la nube----------
+        //<---------sincronizar mis marcas a la nube----------
         async function syncDataToCloud() {
             if (!myUsername) return alert("Primero debes crear un nickname.");
-            if (SUPABASE_URL === 'TU_URL_AQUI') return alert("Falta configurar la API de Supabase.");
+            if (SUPABASE_URL.includes('TU_URL_AQUI')) return alert("Falta configurar la API de Supabase.");
             
             const history = JSON.parse(localStorage.getItem('gym_history')) || [];
             let bestMarks = {};
@@ -2592,7 +2593,8 @@
             };
 
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/usuarios`, {
+                // Añadimos on_conflict=username para asegurar que actualice si ya existe
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?on_conflict=username`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2603,13 +2605,19 @@
                     body: JSON.stringify(payload)
                 });
 
-                if (response.ok) alert("¡Marcas subidas a la nube con éxito!");
-                else alert("Error al sincronizar datos.");
+                if (response.ok) {
+                    alert("¡Marcas subidas a la nube con éxito!");
+                } else {
+                    const errData = await response.json();
+                    console.error("Error de Supabase:", errData);
+                    alert("Error Supabase (" + response.status + "): " + (errData.message || JSON.stringify(errData)));
+                }
             } catch (error) {
-                alert("Sin conexión. Inténtalo más tarde.");
+                console.error("Error de red:", error);
+                alert("Sin conexión o error de red: " + error.message);
             }
         }
-
+        
         //<---------buscar y añadir amigo----------
         async function searchFriend() {
             const friendName = document.getElementById('friend-search-input').value.trim().toLowerCase();
