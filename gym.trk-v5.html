@@ -2629,24 +2629,18 @@
             setTimeout(initSocial, 1000);
         }
 
-        //----------------(NORMALIZACIÓN Y FILTRADO SOCIAL DE EJERCICIOS)-------------
+        //----------------(NORMALIZACIÓN Y FILTRADO SOCIAL DE LOS 4 EJERCICIOS MAESTROS)-------------
         function normalizeExerciseName(name) {
             let n = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             if(n.includes("banca") || n.includes("bench")) return "bench_press";
             if(n.includes("sentadilla") || n.includes("squat")) return "squat";
             if(n.includes("muerto") || n.includes("deadlift")) return "deadlift";
             if(n.includes("militar") || n.includes("overhead") || n.includes("press hombro")) return "overhead_press";
-            if(n.includes("jalon") || n.includes("pulldown")) return "lat_pulldown";
-            if(n.includes("remo") || n.includes("row")) return "row";
-            if(n.includes("curl") || n.includes("biceps")) return "biceps_curl";
-            if(n.includes("triceps") || n.includes("pushdown")) return "triceps_pushdown";
-            if(n.includes("prensa") || n.includes("leg press")) return "leg_press";
-            return n.replace(/[^a-z0-9]/g, "_");
+            return null; // Solo se aceptan y comparan los 4 ejercicios maestros
         }
 
         function getMyBestMarks() {
             let bestMarks = {};
-            // Lista blanca de ejercicios de peso libre comparables + cualquier ejercicio tipo 'smith' (Multipower calibrada)
             const allowedKeys = ['bench_press', 'squat', 'deadlift', 'overhead_press'];
 
             history.forEach(session => {
@@ -2654,19 +2648,32 @@
                     let baseKey = normalizeExerciseName(ex.name);
                     let isSmith = (ex.equipType === 'smith');
 
-                    if (allowedKeys.includes(baseKey) || isSmith) {
-                        ex.sets.forEach(set => {
-                            if(set.completed && set.weight > 0) {
-                                if(!bestMarks[baseKey] || set.weight > bestMarks[baseKey].weight) {
-                                    bestMarks[baseKey] = { 
-                                        weight: set.weight, 
-                                        reps: set.reps, 
-                                        date: session.date, 
-                                        visualName: ex.name 
-                                    };
+                    // Aceptamos si es uno de los 4 permitidos (peso libre) o cualquier variante ejecutada en máquina Smith (Multipower calibrada)
+                    if ((baseKey && allowedKeys.includes(baseKey)) || isSmith) {
+                        // Si es Smith y no tiene clave normalizada exacta, lo asignamos por su nombre normalizado o por defecto si coincide con banca/sentadilla/militar
+                        let finalKey = baseKey;
+                        if (!finalKey && isSmith) {
+                            let nName = ex.name.toLowerCase();
+                            if (nName.includes("banca") || nName.includes("bench")) finalKey = "bench_press";
+                            else if (nName.includes("sentadilla") || nName.includes("squat")) finalKey = "squat";
+                            else if (nName.includes("militar") || nName.includes("hombro")) finalKey = "overhead_press";
+                            else finalKey = "bench_press"; // Default fallback para smith
+                        }
+
+                        if (finalKey && allowedKeys.includes(finalKey)) {
+                            ex.sets.forEach(set => {
+                                if(set.completed && set.weight > 0) {
+                                    if(!bestMarks[finalKey] || set.weight > bestMarks[finalKey].weight) {
+                                        bestMarks[finalKey] = { 
+                                            weight: set.weight, 
+                                            reps: set.reps, 
+                                            date: session.date, 
+                                            visualName: ex.name 
+                                        };
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                 });
             });
@@ -2778,36 +2785,36 @@
                     const contentContainer = document.getElementById('comparison-content');
                     contentContainer.innerHTML = '';
 
-                    const allKeys = Array.from(new Set([...Object.keys(myMarks), ...Object.keys(friendMarks)]));
+                    // Las 4 ventanas fijas de ejercicios maestros
+                    const canonicalExercises = [
+                        { key: 'bench_press', title: 'Press de Banca' },
+                        { key: 'squat', title: 'Sentadilla' },
+                        { key: 'deadlift', title: 'Peso Muerto' },
+                        { key: 'overhead_press', title: 'Press Militar / Hombro' }
+                    ];
 
-                    if (allKeys.length === 0) {
-                        contentContainer.innerHTML = `<p style="color:var(--text-secondary); text-align:center; padding:20px;">No hay marcas comparables registradas (solo peso libre y máquinas Smith).</p>`;
-                    } else {
-                        allKeys.forEach(key => {
-                            const mine = myMarks[key];
-                            const theirs = friendMarks[key];
+                    canonicalExercises.forEach(exDef => {
+                        const mine = myMarks[exDef.key];
+                        const theirs = friendMarks[exDef.key];
 
-                            const exerciseDisplayName = mine ? mine.visualName : (theirs ? theirs.visualName : key);
-
-                            const card = document.createElement('div');
-                            card.style.cssText = 'background:var(--bg-input); border:1px solid var(--border-color); padding:10px; margin-bottom:8px;';
-                            
-                            card.innerHTML = `
-                                <div style="font-weight:700; font-size:0.9rem; text-transform:uppercase; margin-bottom:6px; color:var(--accent-green);">${exerciseDisplayName}</div>
-                                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size:0.85rem;">
-                                    <div style="background:var(--bg-card); padding:6px; border:1px solid var(--border-color);">
-                                        <span style="color:var(--text-secondary); display:block; font-size:0.7rem;">TÚ</span>
-                                        <strong>${mine ? mine.weight + ' kg x ' + mine.reps : '-'}</strong>
-                                    </div>
-                                    <div style="background:var(--bg-card); padding:6px; border:1px solid var(--border-color);">
-                                        <span style="color:var(--text-secondary); display:block; font-size:0.7rem;">@${friendName}</span>
-                                        <strong>${theirs ? theirs.weight + ' kg x ' + theirs.reps : '-'}</strong>
-                                    </div>
+                        const card = document.createElement('div');
+                        card.style.cssText = 'background:var(--bg-input); border:1px solid var(--border-color); padding:10px; margin-bottom:8px;';
+                        
+                        card.innerHTML = `
+                            <div style="font-weight:700; font-size:0.9rem; text-transform:uppercase; margin-bottom:6px; color:var(--accent-green);">${exDef.title}</div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size:0.85rem;">
+                                <div style="background:var(--bg-card); padding:6px; border:1px solid var(--border-color);">
+                                    <span style="color:var(--text-secondary); display:block; font-size:0.7rem;">TÚ</span>
+                                    <strong>${mine ? mine.weight + ' kg x ' + mine.reps : '-'}</strong>
                                 </div>
-                            `;
-                            contentContainer.appendChild(card);
-                        });
-                    }
+                                <div style="background:var(--bg-card); padding:6px; border:1px solid var(--border-color);">
+                                    <span style="color:var(--text-secondary); display:block; font-size:0.7rem;">@${friendName}</span>
+                                    <strong>${theirs ? theirs.weight + ' kg x ' + theirs.reps : '-'}</strong>
+                                </div>
+                            </div>
+                        `;
+                        contentContainer.appendChild(card);
+                    });
 
                     document.getElementById('comparison-modal').classList.add('active');
                 } else {
