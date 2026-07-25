@@ -790,13 +790,41 @@
             <button class="timer-reset-btn" onclick="resetTimerFullscreen()">Resetear</button>
         </div>
     </div>
-     
-    <nav class="bottom-nav">
-        <button class="nav-item active" onclick="switchView('train', this)">Entrenar</button>
-        <button class="nav-item" onclick="switchView('routines', this)">Rutinas</button>
-        <button class="nav-item" onclick="switchView('history', this)">Historial</button>
-        <button class="nav-item" onclick="switchView('charts', this)">Gráficos</button>
-    </nav>
+    
+    <div id="social" class="view">
+        <header>
+            <h1>SOCIAL</h1>
+            <button class="btn btn-success" onclick="syncDataToCloud()">Sincronizar Marcas</button>
+        </header>
+            
+        <div id="social-auth-section" style="margin-bottom: 20px;">
+            <h2>Tu Perfil</h2>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom:10px;">Crea un nickname único para que tus amigos te encuentren.</p>
+            <input type="text" id="username-input" placeholder="Ej: Carlos_Lift" style="margin-bottom: 10px;">
+            <button class="btn btn-block" onclick="saveUsername()">Guardar Nickname</button>
+            <p id="auth-status" style="font-size: 0.8rem; color: var(--accent-green); margin-top: 5px;"></p>
+        </div>
+
+        <div id="social-friends-section" style="display:none;">
+            <h2>Añadir Amigo</h2>
+            <div style="display:flex; gap: 10px; margin-bottom: 20px;">
+                <input type="text" id="friend-search-input" placeholder="Nickname del amigo">
+                <button class="btn" onclick="searchFriend()">Buscar</button>
+            </div>
+
+            <h2>Tus Rivales</h2>
+            <div id="friends-list">
+                </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="switchView('history')" id="tab-history">HISTORIAL</button>
+        <button class="nav-item" onclick="switchView('templates')" id="tab-templates">RUTINAS</button>
+        <button class="nav-item" onclick="switchView('workout')" id="tab-workout">ENTRENAR</button>
+        <button class="nav-item" onclick="switchView('exercises')" id="tab-exercises">EJERCICIOS</button>
+        <button class="nav-item" onclick="switchView('social')" id="tab-social">SOCIAL</button>
+    </div>
 
     <script>
         const defaultTemplates = {
@@ -956,21 +984,20 @@
             if (currentWorkout) renderWorkout();
         }
 
-        function switchView(viewId, buttonElement) {
+                //<---------cambiar de vista----------
+        function switchView(viewId) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(`view-${viewId}`).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
 
-            if (buttonElement) {
-                document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-                buttonElement.classList.add('active');
-            }
+            document.getElementById(viewId).classList.add('active');
+            const tabBtn = document.getElementById(`tab-${viewId}`);
+            if (tabBtn) tabBtn.classList.add('active');
 
             if (viewId === 'history') renderHistory();
-            if (viewId === 'routines') renderRoutines();
-            if (viewId === 'charts') {
-                renderChartsExerciseList();
-                renderWeeklyMuscleVolume();
-            }
+            if (viewId === 'templates') renderTemplates();
+            if (viewId === 'workout') renderWorkout();
+            if (viewId === 'exercises') renderExerciseLibrary();
+            if (viewId === 'social') initSocial();
         }
 
         function openCustomModal(title, placeholder, onConfirm, showMuscleSelect = false, showEquipSelect = false, showTargetReps = false, showRestTimer = false) {
@@ -2487,6 +2514,166 @@
                 }
             }
         });
+
+                //----------------(SISTEMA SOCIAL Y SUPABASE)-------------
+
+        // Variables de conexión (Las rellenaremos al configurar Supabase)
+        const SUPABASE_URL = 'TU_URL_AQUI'; 
+        const SUPABASE_KEY = 'TU_API_KEY_AQUI';
+
+        let myUsername = localStorage.getItem('gym_username') || null;
+        let myFriends = JSON.parse(localStorage.getItem('gym_friends')) || [];
+
+        //<---------inicializar vista social----------
+        function initSocial() {
+            if (myUsername) {
+                document.getElementById('social-auth-section').style.display = 'none';
+                document.getElementById('social-friends-section').style.display = 'block';
+                renderFriendsList();
+            } else {
+                document.getElementById('social-auth-section').style.display = 'block';
+                document.getElementById('social-friends-section').style.display = 'none';
+            }
+        }
+
+        //<---------guardar nombre de usuario----------
+        function saveUsername() {
+            const input = document.getElementById('username-input').value.trim();
+            if (!input) return alert("Introduce un nickname válido.");
+            
+            myUsername = input.toLowerCase().replace(/\s+/g, "_");
+            localStorage.setItem('gym_username', myUsername);
+            document.getElementById('auth-status').innerText = "¡Perfil creado: @" + myUsername + "!";
+            setTimeout(initSocial, 1000);
+        }
+
+        //<---------normalizador de ejercicios híbrido----------
+        function normalizeExerciseName(name) {
+            let n = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if(n.includes("banca") || n.includes("bench")) return "bench_press";
+            if(n.includes("sentadilla") || n.includes("squat")) return "squat";
+            if(n.includes("muerto") || n.includes("deadlift")) return "deadlift";
+            if(n.includes("militar") || n.includes("overhead")) return "overhead_press";
+            if(n.includes("curl")) return "biceps_curl";
+            return n.replace(/\s+/g, "_"); // Si no está en la lista base, usa su propio nombre limpio
+        }
+
+        //<---------sincronizar mis marcas a la nube----------
+        async function syncDataToCloud() {
+            if (!myUsername) return alert("Primero debes crear un nickname.");
+            if (SUPABASE_URL === 'TU_URL_AQUI') return alert("Falta configurar la API de Supabase.");
+            
+            const history = JSON.parse(localStorage.getItem('gym_history')) || [];
+            let bestMarks = {};
+            
+            // Extraer mejores pesos históricos por ejercicio normalizado
+            history.forEach(session => {
+                session.exercises.forEach(ex => {
+                    let baseKey = normalizeExerciseName(ex.name);
+                    ex.sets.forEach(set => {
+                        if(set.completed && set.weight > 0) {
+                            if(!bestMarks[baseKey] || set.weight > bestMarks[baseKey].weight) {
+                                bestMarks[baseKey] = { 
+                                    weight: set.weight, 
+                                    reps: set.reps, 
+                                    date: session.date, 
+                                    visualName: ex.name 
+                                };
+                            }
+                        }
+                    });
+                });
+            });
+
+            const payload = {
+                username: myUsername,
+                marcas: bestMarks,
+                last_updated: new Date().toISOString()
+            };
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/usuarios`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Prefer': 'resolution=merge-duplicates'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) alert("¡Marcas subidas a la nube con éxito!");
+                else alert("Error al sincronizar datos.");
+            } catch (error) {
+                alert("Sin conexión. Inténtalo más tarde.");
+            }
+        }
+
+        //<---------buscar y añadir amigo----------
+        async function searchFriend() {
+            const friendName = document.getElementById('friend-search-input').value.trim().toLowerCase();
+            if (!friendName) return alert("Escribe un nickname.");
+            if (friendName === myUsername) return alert("No te puedes añadir a ti mismo.");
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?username=eq.${friendName}&select=*`, {
+                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+                });
+                
+                const data = await response.json();
+                if (data && data.length > 0) {
+                    if (!myFriends.includes(friendName)) {
+                        myFriends.push(friendName);
+                        localStorage.setItem('gym_friends', JSON.stringify(myFriends));
+                        renderFriendsList();
+                        alert(`¡${friendName} añadido a tu lista!`);
+                    } else { 
+                        alert("Ya tienes a este usuario en tu lista."); 
+                    }
+                } else { 
+                    alert("Usuario no encontrado en la nube."); 
+                }
+            } catch(error) { 
+                alert("Error de red."); 
+            }
+        }
+
+        //<---------dibujar lista de amigos----------
+        function renderFriendsList() {
+            const container = document.getElementById('friends-list');
+            container.innerHTML = '';
+            if (myFriends.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-secondary); font-size:0.85rem;">Aún no sigues a ningún rival.</p>';
+                return;
+            }
+            myFriends.forEach(friend => {
+                const card = document.createElement('div');
+                card.className = 'exercise-card';
+                card.innerHTML = `
+                    <div class="exercise-header">
+                        <span class="exercise-title" style="color:var(--accent-yellow);">@${friend}</span>
+                        <button class="btn btn-success" onclick="compareWithFriend('${friend}')">Comparar</button>
+                    </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        //<---------comparar marcas con amigo----------
+        async function compareWithFriend(friendName) {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?username=eq.${friendName}&select=*`, {
+                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+                });
+                const data = await response.json();
+                if(data && data.length > 0) {
+                    console.log(`Marcas de ${friendName}:`, data[0].marcas);
+                    alert(`¡Datos de @${friendName} obtenidos correctamente!\n\nRevisa la consola para ver el JSON o avísame para pintar la tabla comparativa visual.`);
+                }
+            } catch(err) { 
+                alert("No se pudo descargar la info del rival."); 
+            }
+        }
 
         document.addEventListener('touchstart', function (event) {
             if (event.touches.length > 1) event.preventDefault();
