@@ -2586,7 +2586,7 @@
             }
         });
 
-        //----------------(SISTEMA SOCIAL Y SUPABASE)-------------
+        //----------------(SISTEMA SOCIAL E SUPABASE)-------------
         const SUPABASE_URL = 'https://ckgsxzeiwrjsphfxtfvq.supabase.co/rest/v1/'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrZ3N4emVpd3Jqc3BoZnh0ZnZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5OTI2NjIsImV4cCI6MjEwMDU2ODY2Mn0.Iq5PjiO-z0TJ3WVm7Da6eA0lO5YwSQfS2sYX_8F_tbo';
 
@@ -2629,14 +2629,14 @@
             setTimeout(initSocial, 1000);
         }
 
-        //----------------(NORMALIZACIÓN Y FILTRADO SOCIAL DE LOS 4 EJERCICIOS MAESTROS)-------------
+        //----------------(NORMALIZACIÓN E FILTRAGEM SOCIAL DOS 4 EXERCÍCIOS MESTRES)-------------
         function normalizeExerciseName(name) {
             let n = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             if(n.includes("banca") || n.includes("bench")) return "bench_press";
             if(n.includes("sentadilla") || n.includes("squat")) return "squat";
             if(n.includes("muerto") || n.includes("deadlift")) return "deadlift";
             if(n.includes("militar") || n.includes("overhead") || n.includes("press hombro")) return "overhead_press";
-            return null; // Solo se aceptan y comparan los 4 ejercicios maestros
+            return null; // Apenas aceita os 4 exercícios mestres
         }
 
         function getMyBestMarks() {
@@ -2648,16 +2648,15 @@
                     let baseKey = normalizeExerciseName(ex.name);
                     let isSmith = (ex.equipType === 'smith');
 
-                    // Aceptamos si es uno de los 4 permitidos (peso libre) o cualquier variante ejecutada en máquina Smith (Multipower calibrada)
+                    // Aceitar se é peso livre permitido ou variante em máquina Smith
                     if ((baseKey && allowedKeys.includes(baseKey)) || isSmith) {
-                        // Si es Smith y no tiene clave normalizada exacta, lo asignamos por su nombre normalizado o por defecto si coincide con banca/sentadilla/militar
                         let finalKey = baseKey;
                         if (!finalKey && isSmith) {
                             let nName = ex.name.toLowerCase();
                             if (nName.includes("banca") || nName.includes("bench")) finalKey = "bench_press";
                             else if (nName.includes("sentadilla") || nName.includes("squat")) finalKey = "squat";
                             else if (nName.includes("militar") || nName.includes("hombro")) finalKey = "overhead_press";
-                            else finalKey = "bench_press"; // Default fallback para smith
+                            else finalKey = "bench_press"; // Fallback padrão
                         }
 
                         if (finalKey && allowedKeys.includes(finalKey)) {
@@ -2763,10 +2762,22 @@
                 card.innerHTML = `
                     <div class="exercise-header">
                         <span class="exercise-title" style="color:var(--accent-yellow);">@${friend}</span>
-                        <button class="btn btn-success" onclick="compareWithFriend('${friend}')">Comparar</button>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button class="btn btn-success" onclick="compareWithFriend('${friend}')">Comparar</button>
+                            <button class="btn" style="border:none; background:transparent; padding:4px; color:var(--accent-red); font-size:1.1rem;" onclick="removeFriend('${friend}')">🗑️</button>
+                        </div>
                     </div>`;
                 container.appendChild(card);
             });
+        }
+
+        // Função para remover amigos da lista local
+        function removeFriend(friendName) {
+            if (confirm(`¿Seguro que quieres eliminar a @${friendName} de tu lista de rivales?`)) {
+                myFriends = myFriends.filter(name => name !== friendName);
+                localStorage.setItem('gym_friends', JSON.stringify(myFriends));
+                renderFriendsList(); // Atualiza a interface gráfica na hora
+            }
         }
 
         async function compareWithFriend(friendName) {
@@ -2785,7 +2796,6 @@
                     const contentContainer = document.getElementById('comparison-content');
                     contentContainer.innerHTML = '';
 
-                    // Las 4 ventanas fijas de ejercicios maestros
                     const canonicalExercises = [
                         { key: 'bench_press', title: 'Press de Banca' },
                         { key: 'squat', title: 'Sentadilla' },
@@ -2826,7 +2836,7 @@
             }
         }
 
-        //----------------(INICIALIZACIÓN DE LA PWA)-------------
+        //----------------(INICIALIZAÇÃO DA PWA)-------------
         document.addEventListener('touchstart', function (event) {
             if (event.touches.length > 1) event.preventDefault();
         }, { passive: false });
@@ -2840,7 +2850,7 @@
     </script>
     
     <script>
-        //----------------(REGISTRO DE SERVICE WORKER Y CONTROL DE ERRORES)-------------
+        //----------------(REGISTRO DO SERVICE WORKER E CONTROLE DE ERROS)-------------
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
