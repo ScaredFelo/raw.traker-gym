@@ -1894,7 +1894,11 @@
                 workout.exercises.forEach(ex => {
                     const activeSets = ex.sets.filter(s => s.completed);
                     if (activeSets.length > 0) {
-                        const setSummaries = activeSets.map(s => `[${s.type || 'N'}] ${s.weight}kg x ${s.reps}`).join(' | ');
+                        const setSummaries = activeSets.map(s => {
+                            // Mostrar también la suma real en el historial visual
+                            let trueWeight = ex.equipType === 'smith' ? (s.weight + smithBarWeight) : s.weight;
+                            return `[${s.type || 'N'}] ${trueWeight}kg x ${s.reps}`;
+                        }).join(' | ');
                         let noteStr = ex.note ? `<p style="font-size:0.75rem; color:var(--text-secondary); font-style:italic;">Nota: ${ex.note}</p>` : '';
                         exercisesHtml += `
                             <div style="margin-top:6px;">
@@ -1981,7 +1985,10 @@
                 if (ex) {
                     const completedSets = ex.sets.filter(s => s.completed);
                     if (completedSets.length > 0) {
-                        const maxWeight = Math.max(...completedSets.map(s => s.weight));
+                        const maxWeight = Math.max(...completedSets.map(s => {
+                            // Sumamos la barra en la evolución si es máquina Smith
+                            return ex.equipType === 'smith' ? (s.weight + smithBarWeight) : s.weight;
+                        }));
                         const sessionTimestamp = session.timestamp || now;
 
                         if ((now - sessionTimestamp) <= oneMonthMs) {
@@ -2236,7 +2243,8 @@
                 case 'fixed-bar':
                     return `<span style="color: var(--text-secondary); text-transform: uppercase;">Fija</span> <span style="color: var(--accent-yellow);">${weight}</span>`;
                 case 'smith':
-                    return getDisksCombination(weight, smithBarWeight);
+                    // El usuario anota los discos. El helper calcula sobre (discos + barra) sumados en tiempo real.
+                    return getDisksCombination(weight + smithBarWeight, smithBarWeight);
                 case 'plate-machine':
                     return getDisksCombination(weight, 0);
                 case 'barbell-olympic':
@@ -2662,9 +2670,12 @@
                         if (finalKey && allowedKeys.includes(finalKey)) {
                             ex.sets.forEach(set => {
                                 if(set.completed && set.weight > 0) {
-                                    if(!bestMarks[finalKey] || set.weight > bestMarks[finalKey].weight) {
+                                    // LA MAGIA DE LA SMITH: Añadimos el peso de la barra calibrada
+                                    let totalWeight = isSmith ? (set.weight + smithBarWeight) : set.weight;
+                                    
+                                    if(!bestMarks[finalKey] || totalWeight > bestMarks[finalKey].weight) {
                                         bestMarks[finalKey] = { 
-                                            weight: set.weight, 
+                                            weight: totalWeight, 
                                             reps: set.reps, 
                                             date: session.date, 
                                             visualName: ex.name 
