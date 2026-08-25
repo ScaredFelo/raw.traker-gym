@@ -1,30 +1,37 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- Configuración básica de la página y adaptación para móviles (PWA) -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>RAW TRACKER PRO</title>
+    <!-- Archivo manifest para que la web funcione como aplicación instalable (PWA) -->
     <link rel="manifest" href="./manifest.json">
+    <!-- Configuraciones especiales para dispositivos iOS (Apple) -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <style>
-        /* ----------------(HOJA DE ESTILOS CSS PRINCIPAL)------------- */
+        /* =========================================================================
+           HOJA DE ESTILOS CSS PRINCIPAL (Diseño visual y colores oscuros estilo app)
+           ========================================================================= */
 
+        /* Variables de colores y fuentes reutilizables en toda la aplicación */
         :root {
-            --bg-main: #0a0a0a;
-            --bg-card: #141414;
-            --bg-input: #1c1c1e;
-            --border-color: #2c2c2e;
-            --text-primary: #ffffff;
-            --text-secondary: #8e8e93;
-            --accent-green: #30d158;
-            --accent-red: #ff453a;
-            --accent-yellow: #ffd60a;
-            --accent-blue: #0a84ff;
+            --bg-main: #0a0a0a;        /* Fondo principal de la pantalla (negro) */
+            --bg-card: #141414;        /* Fondo para las tarjetas de ejercicios */
+            --bg-input: #1c1c1e;       /* Fondo para campos de texto y botones secundarios */
+            --border-color: #2c2c2e;   /* Color de los bordes y líneas divisorias */
+            --text-primary: #ffffff;   /* Color de texto principal (blanco) */
+            --text-secondary: #8e8e93; /* Color de texto secundario (gris) */
+            --accent-green: #30d158;   /* Verde para éxito, completados y botones principales */
+            --accent-red: #ff453a;     /* Rojo para eliminar, cancelar o alertas */
+            --accent-yellow: #ffd60a;  /* Amarillo para descansos y avisos */
+            --accent-blue: #0a84ff;    /* Azul para enlaces o datos especiales */
             --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
+        /* Estilos generales para el documento y el cuerpo de la app */
         html, body {
             background-color: var(--bg-main);
             color: var(--text-primary);
@@ -35,6 +42,7 @@
             -webkit-overflow-scrolling: touch;
         }
 
+        /* Reset global: quita márgenes y rellenos por defecto de todos los elementos */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -50,6 +58,7 @@
             padding-bottom: 160px;
         }
 
+        /* Estilo para los encabezados de las pantallas */
         header {
             display: flex;
             justify-content: space-between;
@@ -75,6 +84,7 @@
             letter-spacing: 0.5px;
         }
 
+        /* Control de visibilidad de las vistas (pantallas): ocultas por defecto, visibles cuando tienen la clase 'active' */
         .view {
             display: none;
         }
@@ -83,6 +93,7 @@
             display: block;
         }
 
+        /* Estilos base para todos los botones de la app */
         .btn {
             background: var(--bg-card);
             color: var(--text-primary);
@@ -95,22 +106,26 @@
             user-select: none;
         }
 
+        /* Botón de éxito (verde) */
         .btn-success {
             border-color: var(--accent-green);
             color: var(--accent-green);
         }
 
+        /* Botón de peligro/alerta (rojo) */
         .btn-danger {
             border-color: var(--accent-red);
             color: var(--accent-red);
         }
 
+        /* Botón que ocupa todo el ancho disponible */
         .btn-block {
             width: 100%;
             text-align: center;
             margin-top: 8px;
         }
 
+        /* Píldora pequeña para mostrar y cambiar el tiempo de descanso de un ejercicio */
         .rest-timer-pill {
             display: inline-flex;
             align-items: center;
@@ -130,6 +145,7 @@
             background: var(--border-color);
         }
 
+        /* Barra de navegación inferior fija para cambiar entre pestañas */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -145,6 +161,7 @@
             user-select: none;
         }
 
+        /* Botón individual de la barra de navegación */
         .nav-item {
             background: none;
             border: none;
@@ -163,6 +180,7 @@
             border-bottom: 2px solid var(--text-primary);
         }
 
+        /* Barra flotante del cronómetro de descanso en la parte inferior */
         .timer-bar {
             position: fixed;
             bottom: 60px;
@@ -179,6 +197,7 @@
             user-select: none;
         }
 
+        /* Tarjeta contenedora para cada ejercicio durante el entrenamiento */
         .exercise-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -198,6 +217,7 @@
             font-weight: 700;
         }
 
+        /* Campo de notas debajo del título de cada ejercicio */
         .exercise-note-input {
             width: 100%;
             background: transparent;
@@ -215,6 +235,7 @@
             color: var(--text-primary);
         }
 
+        /* Tabla de series (peso, repeticiones, botón de completado) */
         .set-table {
             width: 100%;
             border-collapse: collapse;
@@ -235,6 +256,7 @@
             vertical-align: middle;
         }
 
+        /* Estilo para cuando una serie está marcada como completada */
         .set-row.completed {
             background: rgba(48, 209, 88, 0.05);
         }
@@ -529,6 +551,12 @@
 </head>
 <body>
 
+    <!-- =========================================================================
+       VENTANAS EMERGENTES (MODALES)
+       Se usan para pedir datos, configurar opciones o mostrar descansos.
+       ========================================================================= -->
+
+    <!-- Modal general para introducir nombres, ejercicios o valores -->
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-box">
             <div id="modal-title" class="modal-title">Introduce un valor</div>
@@ -678,6 +706,11 @@
         </div>
     </div>
 
+    <!-- =========================================================================
+       VISTAS DE LA APLICACIÓN (Pantallas principales que cambian al navegar)
+       ========================================================================= -->
+
+    <!-- Vista 1: Pantalla de entrenamiento activo (donde registras tus series del día) -->
     <div id="view-workout" class="view">
         <header style="display: flex; flex-direction: column; align-items: stretch; gap: 8px;">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
@@ -701,6 +734,7 @@
         <button id="btn-add-exercise-session" class="btn btn-add-set" style="margin-top: 16px; border-style: solid; display: none;" onclick="openAddExerciseSessionModal()">+ Añadir Ejercicio</button>
     </div>
 
+    <!-- Vista 2: Plantillas de rutinas (crear o elegir rutinas guardadas) -->
     <div id="view-templates" class="view">
         <header>
             <h1>Mis Plantillas</h1>
@@ -709,6 +743,7 @@
         <div id="routines-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
     </div>
 
+    <!-- Vista 2.1: Editor de rutinas (para añadir/quitar ejercicios de una plantilla) -->
     <div id="view-edit-routine" class="view">
         <header>
             <h1 id="edit-routine-title">Editar Rutina</h1>
@@ -725,6 +760,7 @@
         <button class="btn btn-block" style="margin-top: 8px; background: transparent;" onclick="cancelRoutineEditor()">Cancelar</button>
     </div>
 
+    <!-- Vista 3: Historial y calendario de entrenamientos (también incluye copia de seguridad) -->
     <div id="view-history" class="view active">
         <header>
             <h1>Historial</h1>
@@ -756,6 +792,7 @@
         </div>
     </div>
 
+    <!-- Vista 4: Ejercicios y evolución (gráficas de progreso y volumen semanal) -->
     <div id="view-exercises" class="view">
         <header>
             <h1>Evolución</h1>
@@ -783,6 +820,7 @@
         <div id="chart-exercises-list"></div>
     </div>
 
+    <!-- Vista 5: Social (comparar marcas con amigos mediante Supabase) -->
     <div id="view-social" class="view">
         <header>
             <h1>SOCIAL</h1>
@@ -844,67 +882,82 @@
     </div>
 
     <script>
+        /* =========================================================================
+           CÓDIGO JAVASCRIPT DE LA APLICACIÓN
+           Aquí se encuentra toda la lógica interactiva: rutinas, temporizadores,
+           cálculo de discos, guardado de datos y funciones sociales.
+           Explicado de forma sencilla para principiantes.
+           ========================================================================= */
+
+        /* 1. PLANTILLAS DE RUTINAS PREDETERMINADAS (Push, Pull, Legs, Upper, Lower) */
         const defaultTemplates = {
             'Push': [
-                { name: 'Press banca inclinado', muscle: 'Pecho', targetReps: '6-8', restTimer: 135, equipType: 'smith', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Press banca inclinado', muscle: 'Pecho', targetReps: '6-8', restTimer: 135, equipType: 'barbell-olympic', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
                 { name: 'Elevaciones laterales', muscle: 'Hombro lateral', targetReps: '8-10', restTimer: 135, equipType: 'dumbbell', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Triceps Pushdowns', muscle: 'Triceps', targetReps: '7-9', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Seated cable Fly', muscle: 'Pecho', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Press militar', muscle: 'Hombro frontal', targetReps: '8-10', restTimer: 135, equipType: 'smith', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Triceps pushdowns', muscle: 'Triceps', targetReps: '7-9', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Seated cable fly', muscle: 'Pecho', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Press militar', muscle: 'Hombro frontal', targetReps: '6-8', restTimer: 135, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
                 { name: 'Extension de triceps', muscle: 'Triceps', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ],
             'Pull': [
-                { name: 'Jalon al pecho en polea', muscle: 'Espalda', targetReps: '6-8', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Biceps en doble/simple polea', muscle: 'Biceps', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Jalon al pecho', muscle: 'Espalda', targetReps: '6-8', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Curl bayesiano', muscle: 'Biceps', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
                 { name: 'Remo en cable', muscle: 'Espalda', targetReps: '7-9', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
                 { name: 'Curl martillo en polea', muscle: 'Biceps', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Remo smith', muscle: 'Espalda', targetReps: '7-9', restTimer: 135, equipType: 'smith', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Isolateral reverse fly polea', muscle: 'Hombro posterior', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Remo libre', muscle: 'Espalda', targetReps: '7-9', restTimer: 135, equipType: 'barbell-olympic', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Isolateral reverse fly', muscle: 'Hombro posterior', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ],
             'Legs': [
-                { name: 'Flexion de piernas estirado', muscle: 'Isquiotibiales', targetReps: '6-8', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Press de piernas en maquina', muscle: 'Quadriceps', targetReps: '6-8', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Elevacion de talones press', muscle: 'Gemelos', targetReps: '8-10', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Bulgaras', muscle: 'Quadriceps', targetReps: '7-9', restTimer: 180, equipType: 'dumbbell', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Romanian dedlift (RDL)', muscle: 'Isquiotibiales', targetReps: '6-8', restTimer: 180, equipType: 'barbell-olympic', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Hiperextensiones', muscle: 'Espalda', targetReps: '8-10', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Flexion de pierna estirado', muscle: 'Isquiotibiales', targetReps: '6-8', restTimer: 180, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Bulgaras', muscle: 'Quadriceps y gluteo', targetReps: '7-9', restTimer: 180, equipType: 'dumbbell', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Elevacion talones sentado', muscle: 'Gemelos', targetReps: '8-10', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Romanian dedlift (RDL)', muscle: 'Isquiotibiales', targetReps: '6-8', restTimer: 180, equipType: 'barbell-olympic', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Extension de quadriceps', muscle: 'Quadriceps', targetReps: '8-10', restTimer: 180, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ],
             'Upper': [
-                { name: 'Press banca inclinado', muscle: 'Pecho', targetReps: '6-8', restTimer: 135, equipType: 'smith', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Seated cable Fly', muscle: 'Pecho', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Jalon al pecho en polea', muscle: 'Espalda', targetReps: '6-8', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Elevaciones laterales', muscle: 'Hombro lateral', targetReps: '8-10', restTimer: 135, equipType: 'dumbbell', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Remo smith', muscle: 'Espalda', targetReps: '7-9', restTimer: 135, equipType: 'smith', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Press banca inclinado', muscle: 'Pecho', targetReps: '6-10', restTimer: 135, equipType: 'barbell-olympic', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Seated cable fly', muscle: 'Pecho', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Jalon al pecho', muscle: 'Espalda', targetReps: '6-8', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Elevaciones laterales', muscle: 'Hombro lateral', targetReps: '8-10', restTimer: 135, equipType: 'dumbbell', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Remo libre', muscle: 'Espalda', targetReps: '7-9', restTimer: 135, equipType: 'barbell-olympic', note: '', sets: [{ weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 7, completed: false, prev: '-', type: 'N' }] },
                 { name: 'Extension de triceps', muscle: 'Triceps', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Biceps en doble/simple polea', muscle: 'Biceps', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Curl bayesiano', muscle: 'Biceps', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Isolateral reverse fly', muscle: 'Hombro posterior', targetReps: '8-10', restTimer: 135, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ],
             'Lower': [
-                { name: 'Flexion de piernas (sentado)', muscle: 'Isquiotibiales', targetReps: '6-8', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Sentadilla con barra smith', muscle: 'Quadriceps', targetReps: '6-8', restTimer: 180, equipType: 'smith', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Hiperextensiones', muscle: 'Espalda', targetReps: '8-10', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Flexion de pierna sentado', muscle: 'Isquiotibiales', targetReps: '6-8', restTimer: 180, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Sentadilla en smith', muscle: 'Quadriceps', targetReps: '6-8', restTimer: 180, equipType: 'smith', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
+                { name: 'Standing calf raise', muscle: 'Gemelos', targetReps: '8-10', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
                 { name: 'Romanian dedlift (RDL)', muscle: 'Isquiotibiales', targetReps: '6-8', restTimer: 180, equipType: 'barbell-olympic', note: '', sets: [{ weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 6, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Extension de quadriceps', muscle: 'Quadriceps', targetReps: '8-10', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] },
-                { name: 'Elevacion talones (sentado)', muscle: 'Gemelos', targetReps: '8-10', restTimer: 180, equipType: 'plate-machine', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
+                { name: 'Extension de quadriceps', muscle: 'Quadriceps', targetReps: '8-10', restTimer: 180, equipType: 'cable', note: '', sets: [{ weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }, { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }] }
             ]
         };
 
-        let templates = {};
-        let currentWorkoutName = "";
-        let currentWorkout = null; 
-        let history = [];
+        /* Variables globales donde se guarda el estado actual de la app */
+        let templates = {};          // Aquí se guardan todas las rutinas (Push, Pull, etc.)
+        let currentWorkoutName = ""; // Nombre de la rutina que estás entrenando ahora mismo
+        let currentWorkout = null;   // Lista de ejercicios de la sesión actual
+        let history = [];            // Historial con todos tus entrenamientos pasados
 
+        /* Discos disponibles en el gimnasio y peso predeterminado de la barra guiada (Smith) */
         const defaultAvailableDisks = {
             "25": true, "20": true, "15": true, "10": true, "5": true, "2.5": true, "1.25": true
         };
         let availableDisks = JSON.parse(localStorage.getItem('raw_gym_available_disks')) || defaultAvailableDisks;
         let smithBarWeight = parseFloat(localStorage.getItem('raw_gym_smith_bar_weight')) || 20;
 
-        let workoutStartTime = null;
-        let workoutTimerInterval = null;
-        let isWorkoutModified = false; 
+        let workoutStartTime = null;     // Hora en que empezó el entrenamiento activo
+        let workoutTimerInterval = null; // Cronómetro general de la sesión
+        let isWorkoutModified = false;   // Indica si modificaste la rutina durante el entreno
 
-        let editingRoutineKey = null;
-        let editingRoutineData = null;
+        let editingRoutineKey = null;    // Nombre de la rutina que estás editando en las plantillas
+        let editingRoutineData = null;   // Ejercicios temporales mientras editas una plantilla
 
-        //----------------(FUNCIONES DE FORMATO Y UTILIDADES)-------------
+        /* ----------------(FUNCIONES DE FORMATO Y UTILIDADES)-------------
+           Esta función toma los segundos de descanso (ej: 135) y los transforma
+           en un texto fácil de leer ("2m 15s"). */
         function formatRestTime(secs) {
             if (!secs || secs <= 0) secs = 120;
             const m = Math.floor(secs / 60);
@@ -1614,6 +1667,8 @@
             }
         }
 
+        /* Finaliza el entrenamiento actual, lo guarda en el historial, calcula la duración
+           y opcionalmente permite guardarlo como plantilla o sincronizarlo con GitHub. */
         function finishWorkout() {
             if(confirm("¿Guardar entrenamiento?")) {
                 const now = new Date();
@@ -1896,7 +1951,7 @@
                     if (activeSets.length > 0) {
                         const setSummaries = activeSets.map(s => {
                             // Mostrar también la suma real en el historial visual
-                            let trueWeight = ex.equipType === 'smith' ? (s.weight + smithBarWeight) : s.weight;
+                            let trueWeight = s.weight;
                             return `[${s.type || 'N'}] ${trueWeight}kg x ${s.reps}`;
                         }).join(' | ');
                         let noteStr = ex.note ? `<p style="font-size:0.75rem; color:var(--text-secondary); font-style:italic;">Nota: ${ex.note}</p>` : '';
@@ -1987,7 +2042,7 @@
                     if (completedSets.length > 0) {
                         const maxWeight = Math.max(...completedSets.map(s => {
                             // Sumamos la barra en la evolución si es máquina Smith
-                            return ex.equipType === 'smith' ? (s.weight + smithBarWeight) : s.weight;
+                            return s.weight;
                         }));
                         const sessionTimestamp = session.timestamp || now;
 
@@ -2146,7 +2201,10 @@
             container.innerHTML = svgHtml;
         }
 
-        //----------------(CÁLCULO DINÁMICO DE DISCOS Y PESOS)-------------
+        /* ----------------(CÁLCULO DINÁMICO DE DISCOS Y PESOS)-------------
+           Esta función matemática calcula automáticamente qué combinación exacta de discos
+           debes poner en cada lado de la barra para alcanzar el peso objetivo (optimizado
+           para usar el menor número de discos posibles). */
         function getMinDisks(target) {
             let t = Math.round(target * 100);
             if (t < 0 || t % 125 !== 0) return null; 
@@ -2183,6 +2241,7 @@
             return result.sort((a,b) => parseFloat(b) - parseFloat(a));
         }
 
+        /* Prepara el texto visual coloreado con los discos que debes colocar por lado (ej: 20 + 10) */
         function getDisksCombination(totalWeight, baseWeight) {
             let netWeight = totalWeight - baseWeight;
             if (netWeight < 0) return '<span style="color: var(--accent-red);">⚠️ &lt; bar</span>';
@@ -2243,8 +2302,7 @@
                 case 'fixed-bar':
                     return `<span style="color: var(--text-secondary); text-transform: uppercase;">Fija</span> <span style="color: var(--accent-yellow);">${weight}</span>`;
                 case 'smith':
-                    // El usuario anota los discos. El helper calcula sobre (discos + barra) sumados en tiempo real.
-                    return getDisksCombination(weight + smithBarWeight, smithBarWeight);
+                    return getDisksCombination(weight, smithBarWeight);
                 case 'plate-machine':
                     return getDisksCombination(weight, 0);
                 case 'barbell-olympic':
@@ -2671,7 +2729,7 @@
                             ex.sets.forEach(set => {
                                 if(set.completed && set.weight > 0) {
                                     // LA MAGIA DE LA SMITH: Añadimos el peso de la barra calibrada
-                                    let totalWeight = isSmith ? (set.weight + smithBarWeight) : set.weight;
+                                    let totalWeight = set.weight;
                                     
                                     if(!bestMarks[finalKey] || totalWeight > bestMarks[finalKey].weight) {
                                         bestMarks[finalKey] = { 
