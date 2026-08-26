@@ -1304,6 +1304,25 @@
             editingRoutineData.forEach((ex, idx) => {
                 const row = document.createElement('div');
                 row.className = 'editor-row';
+                
+                let setsHtml = '';
+                if (ex.sets && ex.sets.length > 0) {
+                    ex.sets.forEach((set, setIdx) => {
+                        setsHtml += `
+                            <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-input); padding: 4px 8px; margin-bottom: 4px; border: 1px solid var(--border-color);">
+                                <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Serie ${setIdx + 1}</span>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Reps:</span>
+                                    <input type="number" value="${set.reps || 8}" onchange="updateEditorSetReps(${idx}, ${setIdx}, this.value)" style="width: 55px; padding: 4px; font-size: 0.85rem; text-align: center;">
+                                    <button class="btn" style="border:none; background:transparent; padding:2px; color:var(--accent-red); font-size:0.9rem;" onclick="deleteEditorSet(${idx}, ${setIdx})">🗑️</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    setsHtml = '<p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 6px;">Sin series definidas.</p>';
+                }
+
                 row.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                         <span style="font-weight: 700; font-size: 1rem;">${ex.name}</span>
@@ -1313,13 +1332,56 @@
                             <button class="btn" style="color: var(--accent-red); border: none; padding: 2px 6px;" onclick="removeExerciseFromEditor(${idx})">❌</button>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <span style="font-size: 0.75rem; color: var(--accent-green); font-weight: 600; text-transform: uppercase;">Objetivo: ${ex.targetReps || '8-10'} reps</span>
+                    <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <span style="font-size: 0.75rem; color: var(--accent-green); font-weight: 600; text-transform: uppercase;">Objetivo:</span>
+                            <input type="text" value="${ex.targetReps || '8-10'}" onchange="updateEditorTargetReps(${idx}, this.value)" placeholder="8-10" style="width: 80px; padding: 4px; font-size: 0.85rem;">
+                        </div>
                         <div class="rest-timer-pill" onclick="openChangeEditorRestTimerModal(${idx})">⏱️ ${formatRestTime(ex.restTimer || 135)}</div>
+                    </div>
+                    <input type="text" class="exercise-note-input" value="${ex.note || ''}" placeholder="Añadir notas (ej: ángulo del banco, sensaciones...)" onchange="updateEditorExerciseNote(${idx}, this.value)">
+                    <div style="margin-top: 8px; margin-bottom: 4px;">
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">Series (${ex.sets ? ex.sets.length : 0}):</div>
+                        ${setsHtml}
+                        <button class="btn btn-add-set" style="margin-top: 4px; padding: 6px;" onclick="addEditorSet(${idx})">+ Añadir Serie</button>
                     </div>
                 `;
                 container.appendChild(row);
             });
+        }
+
+        function updateEditorTargetReps(idx, val) {
+            editingRoutineData[idx].targetReps = val.trim();
+        }
+
+        function updateEditorExerciseNote(idx, val) {
+            editingRoutineData[idx].note = val;
+        }
+
+        function updateEditorSetReps(idx, setIdx, val) {
+            editingRoutineData[idx].sets[setIdx].reps = parseInt(val) || 0;
+        }
+
+        function addEditorSet(idx) {
+            const sets = editingRoutineData[idx].sets;
+            const lastSet = sets[sets.length - 1] || { weight: 0, reps: 8, type: 'N' };
+            sets.push({
+                weight: 0,
+                reps: lastSet.reps || 8,
+                completed: false,
+                prev: '-',
+                type: 'N'
+            });
+            renderEditorExercises();
+        }
+
+        function deleteEditorSet(idx, setIdx) {
+            if (editingRoutineData[idx].sets.length <= 1) {
+                alert("El ejercicio debe tener al menos una serie.");
+                return;
+            }
+            editingRoutineData[idx].sets.splice(setIdx, 1);
+            renderEditorExercises();
         }
 
         function openAddExerciceToTemplateModal() {
@@ -1331,7 +1393,11 @@
                     targetReps: targetReps,
                     restTimer: restTimer || 135,
                     note: '',
-                    sets: [{ weight: 0, reps: 0, completed: false, prev: '-', type: 'N' }]
+                    sets: [
+                        { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' },
+                        { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' },
+                        { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' }
+                    ]
                 });
                 renderEditorExercises();
             }, true, true, true, true);
@@ -1360,6 +1426,7 @@
             currentWorkout = JSON.parse(JSON.stringify(templates[key]));
             
             currentWorkout.forEach(ex => {
+                const templateNote = ex.note || '';
                 const lastHistoryOfEx = findLastCompletedExerciseData(ex.name);
                 if (lastHistoryOfEx) {
                     const originalTarget = ex.targetReps;
@@ -1373,6 +1440,9 @@
                     }));
                     ex.targetReps = originalTarget;
                     ex.restTimer = originalRest || ex.restTimer || 135;
+                    ex.note = templateNote || lastHistoryOfEx.note || '';
+                } else {
+                    ex.note = templateNote;
                 }
             });
 
