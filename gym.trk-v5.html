@@ -2571,6 +2571,16 @@
         let timerEndTime = 0; 
         let pausedTimeLeft = 0; 
 
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    console.log('Notification permission result:', permission);
+                }).catch(err => {
+                    console.error('Error requesting notification permission:', err);
+                });
+            }
+        }
+
         function toggleTimerFullscreen(show) {
             unlockAudio();
             const overlay = document.getElementById('fullscreen-timer');
@@ -2588,6 +2598,7 @@
 
         function startFullscreenTimer(seconds) {
             unlockAudio();
+            requestNotificationPermission();
             clearInterval(timerInterval);
             timerDuration = seconds;
             timerSecondsLeft = seconds;
@@ -2612,6 +2623,15 @@
                         clearInterval(timerInterval);
                         playTimerSound();
                         if (navigator.vibrate) navigator.vibrate([500, 100, 500, 100, 500, 100, 800]);
+                        
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                            try {
+                                new Notification("¡Fin del descanso! ⏱️", { body: "Es hora de ir a por la siguiente serie." });
+                            } catch (e) {
+                                console.error("Error showing notification:", e);
+                            }
+                        }
+
                         toggleTimerFullscreen(false);
                     }
                 }
@@ -2717,6 +2737,15 @@
                     clearInterval(timerInterval);
                     playTimerSound();
                     if (navigator.vibrate) navigator.vibrate([500, 100, 500, 100, 500, 100, 800]);
+                    
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        try {
+                            new Notification("¡Fin del descanso! ⏱️", { body: "Es hora de ir a por la siguiente serie." });
+                        } catch (e) {
+                            console.error("Error showing notification:", e);
+                        }
+                    }
+
                     toggleTimerFullscreen(false);
                 }
             }
