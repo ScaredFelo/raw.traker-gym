@@ -1427,7 +1427,7 @@
             
             currentWorkout.forEach(ex => {
                 const templateNote = ex.note || '';
-                const lastHistoryOfEx = findLastCompletedExerciseData(ex.name);
+                const lastHistoryOfEx = findLastCompletedExerciseData(ex.name, key);
                 if (lastHistoryOfEx) {
                     const originalTarget = ex.targetReps;
                     const originalRest = ex.restTimer;
@@ -1442,6 +1442,15 @@
                     ex.restTimer = originalRest || ex.restTimer || 135;
                     ex.note = templateNote || lastHistoryOfEx.note || '';
                 } else {
+                    const globalHistoryOfEx = findLastCompletedExerciseData(ex.name, null);
+                    if (globalHistoryOfEx && globalHistoryOfEx.sets) {
+                        ex.sets.forEach((set, sIdx) => {
+                            if (globalHistoryOfEx.sets[sIdx]) {
+                                const gs = globalHistoryOfEx.sets[sIdx];
+                                set.prev = `${gs.weight} kg x ${gs.reps}`;
+                            }
+                        });
+                    }
                     ex.note = templateNote;
                 }
             });
@@ -1483,8 +1492,9 @@
             switchView('view-workout');
         }
 
-        function findLastCompletedExerciseData(exerciseName) {
+        function findLastCompletedExerciseData(exerciseName, routineName) {
             for (let session of history) {
+                if (routineName !== undefined && routineName !== null && session.routineName !== routineName) continue;
                 const found = session.exercises.find(e => e.name.toLowerCase() === exerciseName.toLowerCase());
                 if (found) return found;
             }
