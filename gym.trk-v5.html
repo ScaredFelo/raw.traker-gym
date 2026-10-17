@@ -611,6 +611,13 @@
                 </select>
             </div>
 
+            <div id="modal-straps-container" style="margin-top: 12px; display: none;">
+                <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); font-weight: 600; font-size: 0.9rem;">
+                    <input type="checkbox" id="modal-straps-checkbox" style="width: 18px; height: 18px; accent-color: var(--accent-green);">
+                    <span>Requiere uso de Straps</span>
+                </label>
+            </div>
+
             <div class="modal-buttons">
                 <button class="btn" onclick="closeCustomModal()">Cancelar</button>
                 <button class="btn btn-success" id="modal-confirm-btn">Confirmar</button>
@@ -702,6 +709,55 @@
 
             <div class="modal-buttons">
                 <button class="btn btn-success" style="width: 100%;" onclick="closeConfigModal()">Guardar y Aplicar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-meta-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">Ajustes del Ejercicio</div>
+            
+            <div style="margin-top: 12px;">
+                <label style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 4px;">Grupo muscular:</label>
+                <select id="edit-meta-muscle" style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px; font-size: 1rem; font-weight: 600; outline: none;">
+                    <option value="Pecho">Pecho</option>
+                    <option value="Triceps">Tríceps</option>
+                    <option value="Hombro frontal">Hombro frontal</option>
+                    <option value="Hombro lateral">Hombro lateral</option>
+                    <option value="Hombro posterior">Hombro posterior</option>
+                    <option value="Espalda">Espalda</option>
+                    <option value="Biceps">Bíceps</option>
+                    <option value="Quadriceps">Cuádriceps</option>
+                    <option value="Isquiotibiales">Isquiotibiales</option>
+                    <option value="Aductores">Aductores</option>
+                    <option value="Gemelos">Gemelos</option>
+                    <option value="Gluteo">Glúteo</option>
+                </select>
+            </div>
+
+            <div style="margin-top: 12px;">
+                <label style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 4px;">Tipo de Peso / Equipamiento:</label>
+                <select id="edit-meta-equip" style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px; font-size: 1rem; font-weight: 600; outline: none;">
+                    <option value="dumbbell">Mancuernas</option>
+                    <option value="cable">Cables (Poleas)</option>
+                    <option value="fixed-bar">Barra Fija</option>
+                    <option value="plate-machine">Discos para máquina</option>
+                    <option value="smith">Multipower (Smith)</option>
+                    <option value="barbell-olympic">Barra Olímpica (20 kg)</option>
+                    <option value="barbell-ez">Barra EZ (10 kg)</option>
+                </select>
+            </div>
+
+            <div style="margin-top: 12px;">
+                <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 8px; background: var(--bg-input); border: 1px solid var(--border-color); font-weight: 600; font-size: 0.9rem;">
+                    <input type="checkbox" id="edit-meta-straps" style="width: 18px; height: 18px; accent-color: var(--accent-green);">
+                    <span>Requiere uso de Straps</span>
+                </label>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn" onclick="closeEditMetaModal()">Cancelar</button>
+                <button class="btn btn-success" onclick="saveEditMetaModal()">Guardar</button>
             </div>
         </div>
     </div>
@@ -954,6 +1010,7 @@
 
         let editingRoutineKey = null;    // Nombre de la rutina que estás editando en las plantillas
         let editingRoutineData = null;   // Ejercicios temporales mientras editas una plantilla
+        let currentEditMetaIndex = null;
 
         /* ----------------(FUNCIONES DE FORMATO Y UTILIDADES)-------------
            Esta función toma los segundos de descanso (ej: 135) y los transforma
@@ -1106,7 +1163,7 @@
         }
 
         //----------------(MODAL GENERAL PERSONALIZADO)-------------
-        function openCustomModal(title, placeholder, onConfirm, showMuscleSelect = false, showEquipSelect = false, showTargetReps = false, showRestTimer = false) {
+        function openCustomModal(title, placeholder, onConfirm, showMuscleSelect = false, showEquipSelect = false, showTargetReps = false, showRestTimer = false, showStrapsCheckbox = false) {
             document.getElementById('modal-title').innerText = title;
             const input = document.getElementById('modal-input');
             input.value = '';
@@ -1124,6 +1181,10 @@
             const muscleSelect = document.getElementById('modal-muscle-select');
             const equipContainer = document.getElementById('modal-equip-container');
             const equipSelect = document.getElementById('modal-equip-select');
+            const strapsContainer = document.getElementById('modal-straps-container');
+            const strapsCheckbox = document.getElementById('modal-straps-checkbox');
+
+            if (strapsCheckbox) strapsCheckbox.checked = false;
             
             repsContainer.style.display = showTargetReps ? 'block' : 'none';
             restContainer.style.display = showRestTimer ? 'block' : 'none';
@@ -1141,6 +1202,10 @@
             } else {
                 equipContainer.style.display = 'none';
             }
+
+            if (strapsContainer) {
+                strapsContainer.style.display = showStrapsCheckbox ? 'block' : 'none';
+            }
             
             document.getElementById('custom-modal').classList.add('active');
             input.focus();
@@ -1149,14 +1214,15 @@
                 const val = input.value.trim();
                 const targetRepsVal = repsInput ? repsInput.value.trim() || '8-10' : '8-10';
                 const restTimerVal = restSelect ? parseInt(restSelect.value) || 135 : 135;
+                const strapsVal = strapsCheckbox ? strapsCheckbox.checked : false;
 
                 if (val) {
                     if (showMuscleSelect && showEquipSelect) {
-                        onConfirm(val, muscleSelect.value, equipSelect.value, targetRepsVal, restTimerVal);
+                        onConfirm(val, muscleSelect.value, equipSelect.value, targetRepsVal, restTimerVal, strapsVal);
                     } else if (showMuscleSelect) {
-                        onConfirm(val, muscleSelect.value, targetRepsVal, restTimerVal);
+                        onConfirm(val, muscleSelect.value, targetRepsVal, restTimerVal, strapsVal);
                     } else {
-                        onConfirm(val);
+                        onConfirm(val, strapsVal);
                     }
                     closeCustomModal();
                 }
@@ -1312,6 +1378,7 @@
                             <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-input); padding: 4px 8px; margin-bottom: 4px; border: 1px solid var(--border-color);">
                                 <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Serie ${setIdx + 1}</span>
                                 <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Peso(kg):</span> <input type="number" value="${set.weight || 0}" step="0.25" onchange="updateEditorSetWeight(${idx}, ${setIdx}, this.value)" style="width: 55px; padding: 4px; font-size: 0.85rem; text-align: center; margin-right: 6px;">
                                     <span style="font-size: 0.75rem; color: var(--text-secondary);">Reps:</span>
                                     <input type="number" value="${set.reps || 8}" onchange="updateEditorSetReps(${idx}, ${setIdx}, this.value)" style="width: 55px; padding: 4px; font-size: 0.85rem; text-align: center;">
                                     <button class="btn" style="border:none; background:transparent; padding:2px; color:var(--accent-red); font-size:0.9rem;" onclick="deleteEditorSet(${idx}, ${setIdx})">🗑️</button>
@@ -1338,6 +1405,7 @@
                             <input type="text" value="${ex.targetReps || '8-10'}" onchange="updateEditorTargetReps(${idx}, this.value)" placeholder="8-10" style="width: 80px; padding: 4px; font-size: 0.85rem;">
                         </div>
                         <div class="rest-timer-pill" onclick="openChangeEditorRestTimerModal(${idx})">⏱️ ${formatRestTime(ex.restTimer || 135)}</div>
+                        <button class="btn" style="padding: 3px 8px; font-size: 0.75rem; display: flex; align-items: center; gap: 4px;" onclick="openEditMetaModal(${idx})">⚙️ Configurar</button>
                     </div>
                     <input type="text" class="exercise-note-input" value="${ex.note || ''}" placeholder="Añadir notas (ej: ángulo del banco, sensaciones...)" onchange="updateEditorExerciseNote(${idx}, this.value)">
                     <div style="margin-top: 8px; margin-bottom: 4px;">
@@ -1360,6 +1428,33 @@
 
         function updateEditorSetReps(idx, setIdx, val) {
             editingRoutineData[idx].sets[setIdx].reps = parseInt(val) || 0;
+        }
+
+        function updateEditorSetWeight(idx, setIdx, val) {
+            editingRoutineData[idx].sets[setIdx].weight = parseFloat(val) || 0;
+        }
+
+        function openEditMetaModal(idx) {
+            currentEditMetaIndex = idx;
+            const ex = editingRoutineData[idx];
+            document.getElementById('edit-meta-muscle').value = ex.muscle || 'Pecho';
+            document.getElementById('edit-meta-equip').value = ex.equipType || 'dumbbell';
+            document.getElementById('edit-meta-straps').checked = !!ex.requiresStraps;
+            document.getElementById('edit-meta-modal').classList.add('active');
+        }
+
+        function closeEditMetaModal() {
+            document.getElementById('edit-meta-modal').classList.remove('active');
+        }
+
+        function saveEditMetaModal() {
+            if (currentEditMetaIndex !== null) {
+                editingRoutineData[currentEditMetaIndex].muscle = document.getElementById('edit-meta-muscle').value;
+                editingRoutineData[currentEditMetaIndex].equipType = document.getElementById('edit-meta-equip').value;
+                editingRoutineData[currentEditMetaIndex].requiresStraps = document.getElementById('edit-meta-straps').checked;
+            }
+            closeEditMetaModal();
+            renderEditorExercises();
         }
 
         function addEditorSet(idx) {
@@ -1385,13 +1480,14 @@
         }
 
         function openAddExerciceToTemplateModal() {
-            openCustomModal("Nombre del ejercicio", "Ej: Dominadas, Press...", function(name, muscle, equip, targetReps, restTimer) {
+            openCustomModal("Nombre del ejercicio", "Ej: Dominadas, Press...", function(name, muscle, equip, targetReps, restTimer, requiresStraps) {
                 editingRoutineData.push({
                     name: name,
                     muscle: muscle,
                     equipType: equip,
                     targetReps: targetReps,
                     restTimer: restTimer || 135,
+                    requiresStraps: requiresStraps,
                     note: '',
                     sets: [
                         { weight: 0, reps: 8, completed: false, prev: '-', type: 'N' },
@@ -1400,7 +1496,7 @@
                     ]
                 });
                 renderEditorExercises();
-            }, true, true, true, true);
+            }, true, true, true, true, true);
         }
 
         function removeExerciseFromEditor(idx) {
@@ -1595,6 +1691,7 @@
                 });
 
                 const targetText = exercise.targetReps ? `<span style="font-size: 0.75rem; color: var(--accent-green); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">Objetivo: ${exercise.targetReps} reps</span>` : '';
+                const strapsAlertHtml = exercise.requiresStraps ? `<div style="background: rgba(255, 214, 10, 0.1); border: 1px solid var(--accent-yellow); color: var(--accent-yellow); padding: 8px; font-size: 0.8rem; font-weight: 700; margin-bottom: 10px; text-transform: uppercase;">⚠️ Ponte los straps para este ejercicio</div>` : '';
 
                 card.innerHTML = `
                     <div class="exercise-header">
@@ -1612,6 +1709,7 @@
                         </div>
                     </div>
                     <input type="text" class="exercise-note-input" value="${exercise.note || ''}" placeholder="Añadir notas (ej: ángulo del banco, sensaciones...)" onchange="updateExerciseNote(${exIndex}, this.value)">
+                    ${strapsAlertHtml}
                     <table class="set-table">
                         <thead><tr><th>Tipo</th><th>Prev</th><th>kg</th><th>Reps</th><th>✓</th><th></th></tr></thead>
                         <tbody>${rowsHtml}</tbody>
@@ -1667,8 +1765,17 @@
             set.completed = !set.completed;
             if (set.completed) {
                 const restSecs = currentWorkout[exIndex].restTimer || 135;
-                toggleTimerFullscreen(true);
-                startFullscreenTimer(restSecs);
+                const isLastSet = setIndex === currentWorkout[exIndex].sets.length - 1;
+                const needsStraps = currentWorkout[exIndex].requiresStraps;
+
+                if (isLastSet && needsStraps) {
+                    setTimeout(() => {
+                        alert("Has completado todas las series. ¡Recuerda quitarte y guardar los straps!");
+                    }, 100);
+                } else {
+                    toggleTimerFullscreen(true);
+                    startFullscreenTimer(restSecs);
+                }
             }
             saveState();
             renderWorkout();
@@ -1702,13 +1809,14 @@
         }
         
         function openAddExerciseSessionModal() {
-            openCustomModal("Añadir ejercicio a la sesión", "Ej: Curl de bíceps...", function(name, muscle, equip, targetReps, restTimer) {
+            openCustomModal("Añadir ejercicio a la sesión", "Ej: Curl de bíceps...", function(name, muscle, equip, targetReps, restTimer, requiresStraps) {
                 currentWorkout.push({
                     name: name,
                     muscle: muscle,
                     equipType: equip,
                     targetReps: targetReps,
                     restTimer: restTimer || 135,
+                    requiresStraps: requiresStraps,
                     note: '',
                     sets: [{ weight: 0, reps: 0, completed: false, prev: "-", type: 'N' }]
                 });
@@ -1716,7 +1824,7 @@
                 localStorage.setItem('raw_gym_is_modified', 'true');
                 saveState();
                 renderWorkout();
-            }, true, true, true, true);
+            }, true, true, true, true, true);
         }
 
         function deleteExercise(exIndex) {
